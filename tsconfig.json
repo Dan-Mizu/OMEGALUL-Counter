@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"module": "es2022",
+		"target": "es2017",
+
+		"outDir": "./dist",
+
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"skipLibCheck": true,
+
+		"moduleResolution": "Node",
+		"esModuleInterop": true,
+		"resolveJsonModule": true
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
+}

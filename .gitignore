@@ -1,0 +1,14 @@
+# Node
+node_modules/
+
+# MacOS
+.DS_Store
+
+# Sensitive Files
+config.json
+
+# TS Builds
+dist/
+
+# Logs
+logs/
