@@ -37,12 +37,12 @@ export default {
 		[key: string]: WriteStream;
 	},
 
-	//initialize logging
+	// initialize logging
 	init: function () {
-		//init log directory
+		// init log directory
 		utility.createDirectory(this.logPath);
 
-		//get current day
+		// get current day
 		this.currentDay = utility.time.currentDate();
 
 		// override console function
@@ -50,35 +50,35 @@ export default {
 			//format message
 			const message = util.format.apply(null, arguments as any | any[]);
 
-			//log to file
+			// log to file
 			this.message(message, {
 				file: ["server", "debug"],
 			});
 
-			//log to console
+			// log to console
 			process.stdout.write(message + "\n");
 		};
 		console.error = console.log;
 	},
 
-	//get log file
+	// get log file
 	getLog: function (logType: string) {
 		// initialize logs if not already
 		if (!fs.existsSync(this.logPath)) this.init();
 
-		//get current day
+		// get current day
 		const date = utility.time.currentDate();
 
-		//if its a new day, refresh stored write streams
+		// if its a new day, refresh stored write streams
 		if (this.currentDay !== date) {
-			//end every stored write stream
+			// end every stored write stream
 			for (const writeStream of Object.entries(this.logFile))
 				(writeStream[1] as WriteStream).close();
 
-			//reset stored write streams
+			// reset stored write streams
 			this.logFile = {};
 
-			//store new day
+			// store new day
 			this.currentDay = date;
 		}
 
@@ -86,21 +86,21 @@ export default {
 		if (!fs.existsSync(path.join(this.logPath, logType)))
 			utility.createDirectory(path.join(this.logPath, logType));
 
-		//create log file write stream if it does not already exist
+		// create log file write stream if it does not already exist
 		if (!this.logFile[logType]) {
-			//get path
+			// get path
 			const filePath = path.join(this.logPath, logType, date + ".log");
 
-			//store log file stream
+			// store log file stream
 			this.logFile[logType] = fs.createWriteStream(filePath, {
 				flags: "a",
 			});
 
-			//log debug
+			// log debug
 			this.debug("New Write Stream: " + logType);
 		}
 
-		//return log file
+		// return log file
 		return this.logFile[logType];
 	},
 
@@ -112,20 +112,20 @@ export default {
 			color: this.ConsoleColor.White,
 		}
 	) {
-		//init options
+		// init options
 		if (options === undefined) options = {};
 
-		//if file is specified but console is not, prevent logging to console
+		// if file is specified but console is not, prevent logging to console
 		if (options.file && options.console === undefined)
 			options.console = false;
 
-		//if file is not specified, prevent logging to file
+		// if file is not specified, prevent logging to file
 		if (options.file === undefined) options.file = null;
 
-		//if color is not specified, default to white
+		// if color is not specified, default to white
 		if (options.color === undefined) options.color = this.ConsoleColor.White;
 
-		//custom message
+		// custom message
 		if (typeof message === "function") {
 			message = message();
 			if (typeof message !== "string") {
@@ -134,55 +134,55 @@ export default {
 				);
 			}
 		}
-		//apply prefix
+		// apply prefix
 		else if (typeof message === "string") {
 			message = utility.time.currentTimestamp() + " | " + message;
 		}
-		//non accepted variable
+		// non accepted variable
 		else {
 			throw new TypeError(
 				'Invalid assignment to parameter "message" | Must be a Function or String'
 			);
 		}
 
-		//log message to log files
+		// log message to log files
 		if (options.file) {
-			//one log file -> array with single file
+			// one log file -> array with single file
 			if (typeof options.file === "string") {
 				const file = options.file;
 				options.file = [];
 				options.file.push(file);
 			}
 
-			//log to files
+			// log to files
 			var fileIndex = 0;
 			while (fileIndex < options.file.length) {
-				//write to log
+				// write to log
 				this.getLog(options.file[fileIndex]).write(message + "\n");
 
-				//next log file
+				// next log file
 				fileIndex++;
 			}
 		}
 
-		//log message to console and server/debug log file
+		// log message to console and server/debug log file
 		if (options.console) {
-			//log to console
+			// log to console
 			process.stdout.write(
 				util.format.apply(null, [options.color, message]) + "\n"
 			);
 
-			//determine files to send to
+			// determine files to send to
 			var files = [];
-			//files were already accessed
+			// files were already accessed
 			if (options.file) {
 				if (!options.file.includes("server")) files.push("server");
 				if (!options.file.includes("debug")) files.push("debug");
 			}
-			//files were not already accessed
+			// files were not already accessed
 			else files = ["server", "debug"];
 
-			//log to server/debug file
+			// log to server/debug file
 			this.message(
 				() => {
 					return message;
@@ -196,20 +196,20 @@ export default {
 		message: string | Function,
 		options?: OptionsConfig | undefined
 	) {
-		//init options
+		// init options
 		if (options === undefined) options = {};
 
-		//log to debug file
+		// log to debug file
 		if (options.file === undefined) options.file = "debug";
 
-		//if debug in server config is true (and console option is not set), log to console as well
+		// if debug in server config is true (and console option is not set), log to console as well
 		if (config.debug === true && options.console === undefined)
 			options.console = true;
 
-		//set to debug color
+		// set to debug color
 		if (options.color === undefined) options.color = this.ConsoleColor.Magenta;
 
-		//log debug
+		// log debug
 		this.message(message, options);
 	},
 };

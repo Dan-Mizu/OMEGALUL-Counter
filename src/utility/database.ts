@@ -1,14 +1,12 @@
-// Database Utility
-
-//dependencies
+// imports
 import { ServiceAccount, database } from "firebase-admin";
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-//get config values
+// config
 import config from "config/config.json";
 
-//init database
+// init
 initializeApp({
 	credential: cert(config.firebase as ServiceAccount),
 	databaseURL: config.database.databaseURL,
@@ -17,7 +15,7 @@ const realtimeDatabase = database();
 const firestoreDatabase = getFirestore();
 
 export default {
-	//set value in database
+	// set value in database
 	setValue: function (
 		path: string,
 		value: any,
@@ -32,14 +30,14 @@ export default {
 		}
 	},
 
-	//get value in database
+	// get value in database
 	getValue: async function (path: string, databaseType: string = "realtime") {
-		//init value
+		// init value
 		let value;
 
 		// realtime database
 		if (databaseType === "realtime")
-			//get value
+			// get value
 			await realtimeDatabase
 				.ref(path)
 				.orderByKey()
@@ -75,7 +73,7 @@ export default {
 		}
 	},
 
-	//check to see if a path in the database exists
+	// check to see if a path in the database exists
 	pathExists: async function (
 		path: string,
 		databaseType: string = "realtime"
@@ -85,7 +83,7 @@ export default {
 
 		// realtime database
 		if (databaseType === "realtime")
-			//check for path
+			// check for path
 			exists = await realtimeDatabase
 				.ref(path)
 				.orderByKey()
