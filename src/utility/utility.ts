@@ -60,7 +60,9 @@ export default {
 
 			// convert to rgb
 			const result = String(
-				/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hexColor as string)
+				/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
+					hexColor as string
+				)
 			);
 			return {
 				r: this.toDecimal(result[1]),
@@ -145,5 +147,71 @@ export default {
 			fs.mkdirSync(dir);
 			return true;
 		} else return false;
+	},
+
+	// stringify json with determined depth
+	JSON: {
+		stringify: function (
+			val: Record<string, any> | Array<Record<string, any>>,
+			depth: number = 1,
+			replacer = null,
+			space: string = " "
+		): string {
+			depth = isNaN(+depth) ? 1 : depth;
+
+			// (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
+			function _build(key, val, depth, o?, a?) {
+				return !val || typeof val != "object"
+					? val
+					: ((a = Array.isArray(val)),
+					  JSON.stringify(val, function (k, v) {
+							if (a || depth > 0) {
+								if (replacer) v = replacer(k, v);
+								if (!k)
+									return (a = Array.isArray(v)), (val = v);
+								!o && (o = a ? [] : {});
+								o[k] = _build(k, v, a ? depth : depth - 1);
+							}
+					  }),
+					  o || (a ? [] : {}));
+			}
+
+			return JSON.stringify(_build("", val, depth), null, space);
+		},
+
+		getAllValuesOfKey: function (
+			obj: Record<string, any>,
+			keyToFind: string
+		): string[] {
+			return Object.entries(obj).reduce(
+				(acc, [key, value]) =>
+					key === keyToFind
+						? acc.concat(value)
+						: typeof value === "object" && value
+						? acc.concat(this.findAllByKey(value, keyToFind))
+						: acc,
+				[]
+			);
+		},
+
+		getObjectsFromKeyValue: function (
+			obj: Record<string, any>,
+			key: string,
+			value: any
+		): Record<string, any>[] {
+			return obj.filter((obj: Record<string, any>) => {
+				return obj[key] === value;
+			});
+		},
+
+		getFirstObjectFromKeyValue: function (
+			obj: Record<string, any>,
+			key: string,
+			value: any
+		): Record<string, any> {
+			return obj.find((obj: Record<string, any>) => {
+				return obj[key] === value;
+			});
+		},
 	},
 };

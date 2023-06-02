@@ -123,7 +123,8 @@ export default {
 		if (options.file === undefined) options.file = null;
 
 		// if color is not specified, default to white
-		if (options.color === undefined) options.color = this.ConsoleColor.White;
+		if (options.color === undefined)
+			options.color = this.ConsoleColor.White;
 
 		// custom message
 		if (typeof message === "function") {
@@ -207,7 +208,8 @@ export default {
 			options.console = true;
 
 		// set to debug color
-		if (options.color === undefined) options.color = this.ConsoleColor.Magenta;
+		if (options.color === undefined)
+			options.color = this.ConsoleColor.Magenta;
 
 		// log debug
 		this.message(message, options);
