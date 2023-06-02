@@ -6,7 +6,7 @@ import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
 //get config values
-const config = await import (`${process.cwd()}/config/config.json`)
+import config from "config/config.json";
 
 //init database
 initializeApp({

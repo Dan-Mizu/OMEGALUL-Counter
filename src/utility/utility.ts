@@ -139,9 +139,6 @@ export default {
 
 	//create directory
 	createDirectory: function (dir: string): boolean {
-		// start in working directory
-		dir = process.cwd() + dir;
-
 		// if directory doesn't exist, create it
 		if (!fs.existsSync(dir)) {
 			fs.mkdirSync(dir);

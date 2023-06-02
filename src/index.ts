@@ -1,6 +1,6 @@
-import log from "./utility/log";
+import log from "./utility/log.js";
 
 // init logs
-log.init();
+log.debug("Init logs");
 
-log.message("test")
+log.message("Starting...");

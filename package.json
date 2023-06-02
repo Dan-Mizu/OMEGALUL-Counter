@@ -6,16 +6,17 @@
   "license": "GPLv1",
   "keywords": [],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "scripts": {
-    "dev": "nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
-    "dev:debug": "nodemon --watch './**/*.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' --inspect src/index.ts",
+    "dev": "cross-env NODE_NO_WARNINGS=1 nodemon --esm src/index.ts",
+    "dev:debug": "nodemon --esm --inspect src/index.ts",
     "build": "npx tsc",
     "run": "node"
   },
   "devDependencies": {
     "@types/node": "^20.2.5",
+    "cross-env": "^7.0.3",
     "nodemon": "^2.0.22",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
