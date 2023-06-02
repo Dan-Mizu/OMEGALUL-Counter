@@ -1,5 +1,10 @@
 {
+    "twitch": {
+        "client_id": "",
+        "client_secret": ""
+    },
     "7tvUserID": "12943173",
+    "desiredEmote": "OMEGALUL",
     "debug": false,
     "updateDatabase": false,
     "paths": {

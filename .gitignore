@@ -12,3 +12,6 @@ dist/
 
 # Logs
 logs/
+
+# Temp
+temp.json
