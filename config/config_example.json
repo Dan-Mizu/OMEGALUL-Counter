@@ -1,14 +1,21 @@
 {
-    "twitch": {
-        "client_id": "",
-        "client_secret": ""
-    },
-    "7tvUserID": "12943173",
-    "desiredEmote": "OMEGALUL",
     "debug": false,
     "updateDatabase": false,
     "paths": {
         "logs": "logs"
+    },
+    "twitch": {
+        "client_id": "",
+        "client_secret": ""
+    },
+    "twitchUserID": "12943173",
+    "desiredEmote": "OMEGALUL",
+    "webhookConfig": {
+        "hostName": "",
+        "sslCert": {
+            "key": "",
+            "cert": ""
+        }
     },
     "database": {
         "databaseURL": ""

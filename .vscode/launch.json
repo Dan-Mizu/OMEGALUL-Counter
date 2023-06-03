@@ -8,13 +8,19 @@
 			"name": "Dev",
 			"command": "npm run dev",
 			"request": "launch",
-			"type": "node-terminal"
+			"type": "node-terminal",
+			"env": {
+				"NODE_ENV": "development"
+			}
 		},
         {
 			"name": "Dev | Debug",
 			"command": "npm run dev:debug",
 			"request": "launch",
-			"type": "node-terminal"
+			"type": "node-terminal",
+			"env": {
+				"NODE_ENV": "development"
+			}
 		},
     ]
 }

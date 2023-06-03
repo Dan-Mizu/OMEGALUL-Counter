@@ -1,16 +1,17 @@
 // imports
-import log from "./utility/log.js";
-import api from "./api.js";
 import { AxiosResponse } from "axios";
+import api from "./api.js";
+import eventSub from "./eventSub.js";
 import utility from "./utility/utility.js";
+import log from "./utility/log.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
 
-// init axios
-const twitchAPI = new api(config["7tvUserID"]);
+// init api
+const twitchAPI = new api(config.twitchUserID);
 
-// get emote data
+// // get emote data
 // await twitchAPI.get7tvData(
 // 	(response: AxiosResponse) => {
 // 		log.message(
@@ -29,17 +30,25 @@ const twitchAPI = new api(config["7tvUserID"]);
 // 	}
 // );
 
-// get emote usage data
-const twitchUsername = await twitchAPI.getUsername();
-await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
-	log.message(
-		`Twitch User ${twitchUsername} Found: \n` +
-			utility.JSON.stringify(
-				utility.JSON.getObjectsFromKeyValue(
-					response.data.emotes,
-					"emote",
-					config.desiredEmote
-				)
-			)
-	);
+// // get emote usage data
+// const twitchUsername = await twitchAPI.getUsername();
+// await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
+// 	log.message(
+// 		`Twitch User ${twitchUsername} Found: \n` +
+// 			utility.JSON.stringify(
+// 				utility.JSON.getObjectsFromKeyValue(
+// 					response.data.emotes,
+// 					"emote",
+// 					config.desiredEmote
+// 				)
+// 			)
+// 	);
+// });
+
+// get listener
+const listener = await eventSub.init();
+
+// events
+const eventStreamOnline = listener.onStreamOnline(config.twitchUserID, (e) => {
+	console.log(`${e.broadcasterDisplayName} just went live!`);
 });

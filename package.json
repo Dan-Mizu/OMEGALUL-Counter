@@ -15,6 +15,7 @@
     "run": "node"
   },
   "devDependencies": {
+    "@twurple/eventsub-ngrok": "^6.2.1",
     "@types/node": "^20.2.5",
     "cross-env": "^7.0.3",
     "nodemon": "^2.0.22",
@@ -22,6 +23,9 @@
     "typescript": "^5.1.3"
   },
   "dependencies": {
+    "@twurple/api": "^6.2.1",
+    "@twurple/auth": "^6.2.1",
+    "@twurple/eventsub-http": "^6.2.1",
     "axios": "^1.4.0",
     "firebase-admin": "^11.9.0"
   }
