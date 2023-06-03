@@ -1,5 +1,11 @@
 // imports
 import { AxiosResponse } from "axios";
+import {
+	EventSubStreamOnlineEvent,
+	EventSubChannelUpdateEvent,
+	EventSubStreamOfflineEvent,
+} from "@twurple/eventsub-base";
+import { HelixStream, HelixUser } from "@twurple/api/lib";
 import api from "./api.js";
 import eventSub from "./eventSub.js";
 import utility from "./utility/utility.js";
@@ -11,41 +17,72 @@ import config from "../config/config.json" assert { type: "json" };
 // init api
 const twitchAPI = new api(config.twitchUserID);
 
-// // get emote data
-// await twitchAPI.get7tvData(
-// 	(response: AxiosResponse) => {
-// 		log.message(
-// 			`Twitch User ${response.data.display_name} Found: \n` +
-// 				utility.JSON.stringify(
-// 					utility.JSON.getObjectsFromKeyValue(
-// 						response.data.emote_set.emotes,
-// 						"name",
-// 						config.desiredEmote
-// 					)
-// 				)
-// 		);
-// 	},
-// 	(err: AxiosError) => {
-// 		log.message("Twitch User NOT Found: \n" + err.message);
-// 	}
-// );
-
 // get current emote usage
 async function getCurrentEmoteUsage(): Promise<number> {
-	// const twitchUsername = await twitchAPI.getUsername();
 	let emoteUsage: number;
-	await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
-		emoteUsage = utility.JSON.getObjectsFromKeyValue(
-			response.data.emotes,
-			"emote",
-			config.desiredEmote
-		)[0].count;
-	});
+	try {
+		await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
+			emoteUsage = utility.JSON.getObjectsFromKeyValue(
+				response.data.emotes,
+				"emote",
+				config.desiredEmote
+			)[0].count;
+		});
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
 	return emoteUsage;
 }
 
+async function getCurrentCategoryData(): Promise<Record<string, any>> {
+	// get stream info
+	let userData: HelixUser;
+	try {
+		userData = await eventSub.apiClient.users.getUserById(
+			config.twitchUserID
+		);
+	} catch (error) {
+		console.log(error);
+	}
+	let streamData: HelixStream;
+	try {
+		streamData = await userData.getStream();
+	} catch (error) {
+		console.log(error);
+		return null;
+	}
+
+	// return category info
+	return streamData
+		? {
+				id: streamData.gameId ? streamData.gameId : null,
+				name: streamData.gameName ? streamData.gameName : null,
+		  }
+		: null;
+}
+
+// init stream data
+async function streamStart(_event: EventSubStreamOnlineEvent): Promise<void> {
+	// new marker
+	let markerData = {
+		[Date.now()]: {
+			marker: {
+				type: "start",
+				category: await getCurrentCategoryData(),
+				emoteCount: await getCurrentEmoteUsage(),
+			},
+		},
+	};
+
+	// DEBUG
+	console.log(markerData);
+}
+
 // get category data
-async function categoryChanged(event): Promise<void> {
+async function categoryChanged(
+	event: EventSubChannelUpdateEvent
+): Promise<void> {
 	// new marker
 	let markerData = {
 		[Date.now()]: {
@@ -64,18 +101,34 @@ async function categoryChanged(event): Promise<void> {
 	console.log(markerData);
 }
 
+// get stream end data
+async function streamEnd(_event: EventSubStreamOfflineEvent): Promise<void> {
+	// new marker
+	let markerData = {
+		[Date.now()]: {
+			type: "end",
+			category: await getCurrentCategoryData(),
+			emoteCount: await getCurrentEmoteUsage(),
+		},
+	};
+
+	// update stream data with final emote usage count
+
+	// DEBUG
+	console.log(markerData);
+}
+
 // get listener
 const listener = await eventSub.init();
 
 // events
-const eventStreamOnline = listener.onStreamOnline(config.twitchUserID, (e) => {
-	console.log(`${e.broadcasterDisplayName} just went live!`);
-});
+const eventStreamOnline = listener.onStreamOnline(
+	config.twitchUserID,
+	streamStart
+);
 const eventStreamOffline = listener.onStreamOffline(
 	config.twitchUserID,
-	(e) => {
-		console.log(`${e.broadcasterDisplayName} just went offline!`);
-	}
+	streamEnd
 );
 const eventStreamChange = listener.onChannelUpdate(
 	config.twitchUserID,
@@ -83,4 +136,6 @@ const eventStreamChange = listener.onChannelUpdate(
 );
 
 // DEBUG
+console.log(await eventStreamOnline.getCliTestCommand());
+console.log(await eventStreamOffline.getCliTestCommand());
 console.log(await eventStreamChange.getCliTestCommand());

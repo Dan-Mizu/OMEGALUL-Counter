@@ -2,49 +2,70 @@ import path from "path";
 import fs, { promises as asyncfs } from "fs";
 
 export default {
-    async getFromTempFile(key: string): Promise<any> {
+	async getFromTempFile(key: string): Promise<any> {
 		// temp file does not exist
 		if (!fs.existsSync(path.join(process.cwd(), "temp.json") as string))
 			return null;
 
 		// temp file exists, read it
-		return JSON.parse(
-			await asyncfs.readFile(
+		let data;
+		try {
+			data = await asyncfs.readFile(
 				path.join(process.cwd(), "temp.json"),
 				"utf-8"
-			)
-		)[key];
+			);
+		} catch (error) {
+			console.log(error);
+			return null;
+		}
+
+		return JSON.parse(data)[key];
 	},
 
 	async writeToTempFile(key: string, value: any): Promise<void> {
 		// temp file exists
 		if (fs.existsSync(path.join(process.cwd(), "temp.json") as string)) {
 			// get temp data
-			const tempData = JSON.parse(
-				await asyncfs.readFile(
+			let tempData;
+			try {
+				tempData = await asyncfs.readFile(
 					path.join(process.cwd(), "temp.json"),
 					"utf-8"
-				)
-			);
+				);
+			} catch (error) {
+				console.log(error);
+				return;
+			}
+			// parse data
+			tempData = JSON.parse(tempData);
 
 			// edit
 			tempData[key] = value;
 
 			// save
-			await asyncfs.writeFile(
-				path.join(process.cwd(), "temp.json"),
-				JSON.stringify(tempData),
-				"utf-8"
-			);
+			try {
+				await asyncfs.writeFile(
+					path.join(process.cwd(), "temp.json"),
+					JSON.stringify(tempData),
+					"utf-8"
+				);
+			} catch (error) {
+				console.log(error);
+				return;
+			}
 		}
 		// new temp file
 		else {
 			// save
-			await asyncfs.writeFile(
-				path.join(process.cwd(), "temp.json"),
-				JSON.stringify({ [key]: value }),
-				"utf-8"
-			);
+			try {
+				await asyncfs.writeFile(
+					path.join(process.cwd(), "temp.json"),
+					JSON.stringify({ [key]: value }),
+					"utf-8"
+				);
+			} catch (error) {
+				console.log(error);
+			}
 		}
-	}
-}
+	},
+};
