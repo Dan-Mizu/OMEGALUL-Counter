@@ -38,6 +38,11 @@ export default class api {
 	}
 
 	async getFromTempFile(key: string): Promise<any> {
+		// temp file does not exist
+		if (!fs.existsSync(path.join(process.cwd(), "temp.json") as string))
+			return null;
+
+		// temp file exists, read it
 		return JSON.parse(
 			await asyncfs.readFile(
 				path.join(process.cwd(), "temp.json"),
@@ -47,23 +52,35 @@ export default class api {
 	}
 
 	async writeToTempFile(key: string, value: any): Promise<void> {
-		// get temp data
-		const tempData = JSON.parse(
-			await asyncfs.readFile(
+		// temp file exists
+		if (fs.existsSync(path.join(process.cwd(), "temp.json") as string)) {
+			// get temp data
+			const tempData = JSON.parse(
+				await asyncfs.readFile(
+					path.join(process.cwd(), "temp.json"),
+					"utf-8"
+				)
+			);
+
+			// edit
+			tempData[key] = value;
+
+			// save
+			await asyncfs.writeFile(
 				path.join(process.cwd(), "temp.json"),
+				JSON.stringify(tempData),
 				"utf-8"
-			)
-		);
-
-		// edit
-		tempData[key] = value;
-
-		// save
-		await asyncfs.writeFile(
-			path.join(process.cwd(), "temp.json"),
-			JSON.stringify(tempData),
-			"utf-8"
-		);
+			);
+		}
+		// new temp file
+		else {
+			// save
+			await asyncfs.writeFile(
+				path.join(process.cwd(), "temp.json"),
+				JSON.stringify({ [key]: value }),
+				"utf-8"
+			);
+		}
 	}
 
 	async getUsername(): Promise<string> {
@@ -90,13 +107,13 @@ export default class api {
 		)
 			return this.twitchAccessToken;
 
-		// check temp file
-		if (fs.existsSync(path.join(process.cwd(), "temp.json") as string)) {
-			// get access token data
-			const accessTokenData = (await this.getFromTempFile(
-				"access_token"
-			)) as AccessTokenData;
+		// get access token data from temp file
+		const accessTokenData = (await this.getFromTempFile(
+			"access_token"
+		)) as AccessTokenData;
 
+		// check temp file
+		if (accessTokenData !== null) {
 			// access token found
 			if (
 				accessTokenData &&
@@ -162,22 +179,19 @@ export default class api {
 		fail?: (err: AxiosError) => void
 	): Promise<void> {
 		try {
+			// get access token
+			const accessToken = await this.getTwitchAccessToken();
 			const response: AxiosResponse = await this.twitchAPI.get("users", {
 				params: data,
 				headers: {
 					"Client-Id": config.twitch.client_id,
-					Authorization:
-						"Bearer " + (await this.getTwitchAccessToken()),
+					Authorization: "Bearer " + accessToken,
 				},
 			});
 			success(response);
 		} catch (err) {
 			if (fail) fail(err);
-			console.error(
-				"Failed Twitch User Retrieval:",
-				err.response.data.status,
-				err.response.data.message
-			);
+			console.error("Failed Twitch User Retrieval:", err);
 		}
 	}
 
