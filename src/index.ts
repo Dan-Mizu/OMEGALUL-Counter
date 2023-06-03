@@ -30,9 +30,10 @@ const twitchAPI = new api(config["7tvUserID"]);
 // );
 
 // get emote usage data
+const twitchUsername = await twitchAPI.getUsername();
 await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
 	log.message(
-		`Twitch User ${twitchAPI.username} Found: \n` +
+		`Twitch User ${twitchUsername} Found: \n` +
 			utility.JSON.stringify(
 				utility.JSON.getObjectsFromKeyValue(
 					response.data.emotes,
