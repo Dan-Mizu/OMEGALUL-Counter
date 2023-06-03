@@ -30,20 +30,39 @@ const twitchAPI = new api(config.twitchUserID);
 // 	}
 // );
 
-// // get emote usage data
-// const twitchUsername = await twitchAPI.getUsername();
-// await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
-// 	log.message(
-// 		`Twitch User ${twitchUsername} Found: \n` +
-// 			utility.JSON.stringify(
-// 				utility.JSON.getObjectsFromKeyValue(
-// 					response.data.emotes,
-// 					"emote",
-// 					config.desiredEmote
-// 				)
-// 			)
-// 	);
-// });
+// get current emote usage
+async function getCurrentEmoteUsage(): Promise<number> {
+	// const twitchUsername = await twitchAPI.getUsername();
+	let emoteUsage: number;
+	await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
+		emoteUsage = utility.JSON.getObjectsFromKeyValue(
+			response.data.emotes,
+			"emote",
+			config.desiredEmote
+		)[0].count;
+	});
+	return emoteUsage;
+}
+
+// get category data
+async function categoryChanged(event): Promise<void> {
+	// new marker
+	let markerData = {
+		[Date.now()]: {
+			type: "category_changed",
+			category: {
+				id: event.categoryId,
+				name: event.categoryName,
+			},
+			emoteCount: await getCurrentEmoteUsage(),
+		},
+	};
+
+	// update previous marker with new data
+
+	// DEBUG
+	console.log(markerData);
+}
 
 // get listener
 const listener = await eventSub.init();
@@ -52,3 +71,16 @@ const listener = await eventSub.init();
 const eventStreamOnline = listener.onStreamOnline(config.twitchUserID, (e) => {
 	console.log(`${e.broadcasterDisplayName} just went live!`);
 });
+const eventStreamOffline = listener.onStreamOffline(
+	config.twitchUserID,
+	(e) => {
+		console.log(`${e.broadcasterDisplayName} just went offline!`);
+	}
+);
+const eventStreamChange = listener.onChannelUpdate(
+	config.twitchUserID,
+	categoryChanged
+);
+
+// DEBUG
+console.log(await eventStreamChange.getCliTestCommand());

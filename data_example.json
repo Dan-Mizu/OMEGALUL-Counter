@@ -1,0 +1,42 @@
+{
+    "unix time representing stream start as well as ID for the stream": {
+        "emoteUsage": 100,
+        "marker": {
+            "unix time representing marker": {
+                "type": "start",
+                "category": {
+                    "id": "7199",
+                    "name": "Just Chatting"
+                },
+                "emoteCount": 302800,
+                "emoteUsage": 20
+            },
+            "unix time representing marker.": {
+                "type": "category_change",
+                "category": {
+                    "id": "7199",
+                    "name": "Just Chatting"
+                },
+                "emoteCount": 302820,
+                "emoteUsage": 30
+            },
+            "unix time representing marker..": {
+                "type": "category_change",
+                "category": {
+                    "id": "7199",
+                    "name": "Just Chatting"
+                },
+                "emoteCount": 302850,
+                "emoteUsage": 50
+            },
+            "unix time representing marker...": {
+                "type": "end",
+                "category": {
+                    "id": "7199",
+                    "name": "Just Chatting"
+                },
+                "emoteCount": 302900
+            }
+        }
+    }
+}
