@@ -1,5 +1,7 @@
+// imports
 import path from "path";
 import fs, { promises as asyncfs } from "fs";
+import log from "./utility/log.js";
 
 export default {
 	async getFromTempFile(key: string): Promise<any> {
@@ -15,7 +17,7 @@ export default {
 				"utf-8"
 			);
 		} catch (error) {
-			console.log(error);
+			log.error(error);
 			return null;
 		}
 
@@ -33,7 +35,7 @@ export default {
 					"utf-8"
 				);
 			} catch (error) {
-				console.log(error);
+				log.error(error);
 				return;
 			}
 			// parse data
@@ -50,7 +52,7 @@ export default {
 					"utf-8"
 				);
 			} catch (error) {
-				console.log(error);
+				log.error(error);
 				return;
 			}
 		}
@@ -64,7 +66,7 @@ export default {
 					"utf-8"
 				);
 			} catch (error) {
-				console.log(error);
+				log.error(error);
 			}
 		}
 	},

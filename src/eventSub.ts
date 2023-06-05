@@ -8,7 +8,6 @@ import {
 } from "@twurple/eventsub-http";
 import { NgrokAdapter } from "@twurple/eventsub-ngrok";
 import tempData from "./tempData.js";
-import log from "./utility/log.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
@@ -49,8 +48,6 @@ export default {
 
 		// store secret in temp file
 		await tempData.writeToTempFile("eventSubSecret", this.secret);
-
-		console.log(this.secret);
 
 		// return new secret
 		return this.secret;

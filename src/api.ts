@@ -1,5 +1,7 @@
+// imports
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
 import tempData from "./tempData.js";
+import log from "./utility/log.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
@@ -116,7 +118,7 @@ export default class api {
 				expires_at: Number(response.data.expires_in) + Date.now(),
 			});
 		} catch (err) {
-			console.error(
+			log.error(
 				"Failed Access Token Retrieval:",
 				err.response.data.status,
 				err.response.data.message
@@ -144,7 +146,7 @@ export default class api {
 			success(response);
 		} catch (err) {
 			if (fail) fail(err);
-			console.error("Failed Twitch User Retrieval:", err);
+			log.error("Failed Twitch User Retrieval:", err);
 		}
 	}
 
@@ -159,7 +161,7 @@ export default class api {
 			success(response);
 		} catch (err) {
 			if (fail) fail(err);
-			console.error(
+			log.error(
 				"Failed 7TV User Retrieval:",
 				err.response.data.status,
 				err.response.data.message
@@ -177,7 +179,7 @@ export default class api {
 			);
 			success(response);
 		} catch (err) {
-			console.error(
+			log.error(
 				"Failed Twitch User Emotes Data Retrieval:",
 				err.response.status,
 				err.response.statusText

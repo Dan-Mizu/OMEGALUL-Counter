@@ -29,7 +29,7 @@ async function getCurrentEmoteUsage(): Promise<number> {
 			)[0].count;
 		});
 	} catch (error) {
-		console.log(error);
+		log.message(error);
 		return null;
 	}
 	return emoteUsage;
@@ -43,13 +43,13 @@ async function getCurrentCategoryData(): Promise<Record<string, any>> {
 			config.twitchUserID
 		);
 	} catch (error) {
-		console.log(error);
+		log.message(error);
 	}
 	let streamData: HelixStream;
 	try {
 		streamData = await userData.getStream();
 	} catch (error) {
-		console.log(error);
+		log.message(error);
 		return null;
 	}
 
@@ -76,7 +76,7 @@ async function streamStart(_event: EventSubStreamOnlineEvent): Promise<void> {
 	};
 
 	// DEBUG
-	console.log(markerData);
+	log.message(markerData);
 }
 
 // get category data
@@ -98,7 +98,7 @@ async function categoryChanged(
 	// update previous marker with new data
 
 	// DEBUG
-	console.log(markerData);
+	log.message(markerData);
 }
 
 // get stream end data
@@ -115,7 +115,7 @@ async function streamEnd(_event: EventSubStreamOfflineEvent): Promise<void> {
 	// update stream data with final emote usage count
 
 	// DEBUG
-	console.log(markerData);
+	log.message(markerData);
 }
 
 // get listener
@@ -136,6 +136,6 @@ const eventStreamChange = listener.onChannelUpdate(
 );
 
 // DEBUG
-console.log(await eventStreamOnline.getCliTestCommand());
-console.log(await eventStreamOffline.getCliTestCommand());
-console.log(await eventStreamChange.getCliTestCommand());
+log.message(await eventStreamOnline.getCliTestCommand());
+log.message(await eventStreamOffline.getCliTestCommand());
+log.message(await eventStreamChange.getCliTestCommand());
