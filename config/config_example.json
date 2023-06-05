@@ -1,6 +1,6 @@
 {
-    "debug": false,
-    "updateDatabase": false,
+    "debug": true,
+    "useProxy": false,
     "paths": {
         "logs": "logs"
     },
@@ -8,7 +8,7 @@
         "client_id": "",
         "client_secret": ""
     },
-    "twitchUserID": "12943173",
+    "twitchUserID": "",
     "desiredEmote": "OMEGALUL",
     "webhookConfig": {
         "hostName": "",
@@ -16,6 +16,10 @@
             "key": "",
             "cert": ""
         }
+    },
+    "reverseProxyConfig": {
+        "hostName": "",
+        "port": 3000
     },
     "database": {
         "databaseURL": ""

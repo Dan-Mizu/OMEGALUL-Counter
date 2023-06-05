@@ -177,7 +177,7 @@ const eventStreamChange = listener.onChannelUpdate(
 	categoryChanged
 );
 
-// // DEBUG
-// log.message(await eventStreamOnline.getCliTestCommand());
-// log.message(await eventStreamOffline.getCliTestCommand());
-// log.message(await eventStreamChange.getCliTestCommand());
+// DEBUG
+log.message(await eventStreamOnline.getCliTestCommand());
+log.message(await eventStreamOffline.getCliTestCommand());
+log.message(await eventStreamChange.getCliTestCommand());

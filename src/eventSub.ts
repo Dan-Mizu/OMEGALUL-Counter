@@ -5,6 +5,7 @@ import { ApiClient } from "@twurple/api";
 import {
 	DirectConnectionAdapter,
 	EventSubHttpListener,
+	ReverseProxyAdapter,
 } from "@twurple/eventsub-http";
 import { NgrokAdapter } from "@twurple/eventsub-ngrok";
 import tempData from "./utility/temp.js";
@@ -75,14 +76,21 @@ export default {
 		}
 
 		// production (outward facing http)
-		else {
-			// init adapter
-			const adapter = new DirectConnectionAdapter(config.webhookConfig);
-
+		else if (!config.useProxy) {
 			// create listener
 			listener = new EventSubHttpListener({
 				apiClient,
-				adapter,
+				adapter: new DirectConnectionAdapter(config.webhookConfig),
+				secret: await this.getSecret(),
+				legacySecrets: false,
+			});
+		}
+		// production (using proxy)
+		else {
+			// create listener
+			listener = new EventSubHttpListener({
+				apiClient,
+				adapter: new ReverseProxyAdapter(config.reverseProxyConfig),
 				secret: await this.getSecret(),
 				legacySecrets: false,
 			});
