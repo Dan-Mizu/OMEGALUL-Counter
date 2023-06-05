@@ -1,7 +1,7 @@
 // imports
 import path from "path";
 import fs, { promises as asyncfs } from "fs";
-import log from "./utility/log.js";
+import log from "./log.js";
 
 export default {
 	async getFromTempFile(key: string): Promise<any> {
@@ -10,7 +10,7 @@ export default {
 			return null;
 
 		// temp file exists, read it
-		let data;
+		let data: string;
 		try {
 			data = await asyncfs.readFile(
 				path.join(process.cwd(), "temp.json"),
@@ -28,7 +28,7 @@ export default {
 		// temp file exists
 		if (fs.existsSync(path.join(process.cwd(), "temp.json") as string)) {
 			// get temp data
-			let tempData;
+			let tempData: string;
 			try {
 				tempData = await asyncfs.readFile(
 					path.join(process.cwd(), "temp.json"),

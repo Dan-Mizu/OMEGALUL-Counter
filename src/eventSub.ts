@@ -7,7 +7,7 @@ import {
 	EventSubHttpListener,
 } from "@twurple/eventsub-http";
 import { NgrokAdapter } from "@twurple/eventsub-ngrok";
-import tempData from "./tempData.js";
+import tempData from "./utility/temp.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };

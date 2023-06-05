@@ -1,6 +1,6 @@
 // imports
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import tempData from "./tempData.js";
+import tempData from "./utility/temp.js";
 import log from "./utility/log.js";
 
 // get data

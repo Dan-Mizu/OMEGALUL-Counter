@@ -1,17 +1,18 @@
 // imports
-import { ServiceAccount, database } from "firebase-admin";
+import firebase from "firebase-admin";
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
 // config
-import config from "config/config.json";
+import config from "../../config/config.json" assert { type: "json" };
+import log from "./log.js";
 
 // init
 initializeApp({
-	credential: cert(config.firebase as ServiceAccount),
+	credential: cert(config.firebase as firebase.ServiceAccount),
 	databaseURL: config.database.databaseURL,
 });
-const realtimeDatabase = database();
+const realtimeDatabase = firebase.database();
 const firestoreDatabase = getFirestore();
 
 export default {
@@ -19,10 +20,26 @@ export default {
 	setValue: function (
 		path: string,
 		value: any,
-		databaseType: string = "firestore"
+		databaseType: string = "realtime"
 	) {
 		// realtime database
 		if (databaseType === "realtime") realtimeDatabase.ref(path).set(value);
+		// firestore database
+		else if (databaseType === "firestore") {
+			// set value
+			firestoreDatabase.collection(path).doc().set(value);
+		}
+	},
+
+	// update value (merging) in database
+	updateValue: function (
+		path: string,
+		value: any,
+		databaseType: string = "realtime"
+	) {
+		// realtime database
+		if (databaseType === "realtime")
+			realtimeDatabase.ref(path).update(value);
 		// firestore database
 		else if (databaseType === "firestore") {
 			// set value
@@ -58,6 +75,61 @@ export default {
 		return value;
 	},
 
+	// get latest key in database
+	getLastKey: async function (
+		path: string,
+		databaseType: string = "realtime"
+	) {
+		// init value
+		let key: string;
+
+		// realtime database
+		if (databaseType === "realtime")
+			// get value
+			await realtimeDatabase
+				.ref()
+				.child(path)
+				.orderByKey()
+				.limitToLast(1)
+				.get()
+				.then((snapshot: firebase.database.DataSnapshot) => {
+					key = Object.keys(snapshot.val())[0];
+				});
+		// firestore database
+		else if (databaseType === "firestore") {
+		}
+
+		return key;
+	},
+
+	// get latest key in database
+	getFirstKey: async function (
+		path: string,
+		databaseType: string = "realtime"
+	) {
+		// init value
+		let key: string;
+
+		// realtime database
+		if (databaseType === "realtime")
+			// get value
+			await realtimeDatabase
+				.ref()
+				.child(path)
+				.orderByKey()
+				.limitToFirst(1)
+				.get()
+				.then((snapshot: firebase.database.DataSnapshot) => {
+					key = Object.keys(snapshot.val())[0];
+				});
+		// firestore database
+		else if (databaseType === "firestore") {
+		}
+
+		return key;
+	},
+
+	// delete entire path in database
 	deletePath: async function (
 		path: string,
 		databaseType: string = "firestore"
