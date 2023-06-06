@@ -205,6 +205,9 @@ async function streamEnd(event: EventSubStreamOfflineEvent): Promise<void> {
 			startDate: stream.startDate,
 			viewers: stream.viewers,
 			emoteUsage: currentEmoteCount - lastEmoteCount,
+			emotePerHour:
+				(currentEmoteCount - lastEmoteCount) /
+				((Date.now() - firstMarker) / (60 * 60 * 1000)), // total emote usage / millisecond difference converted to hours
 		}
 	);
 

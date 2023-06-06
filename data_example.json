@@ -6,6 +6,7 @@
             "startDate": "# Stream Start Date",
             "viewers": 69,
             "emoteUsage": 100,
+            "emotePerHour": 551.54,
             "marker": {
                 "# unix time representing marker": {
                     "type": "start",
