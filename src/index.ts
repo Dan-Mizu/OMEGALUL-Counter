@@ -184,3 +184,6 @@ const eventStreamChange = listener.onChannelUpdate(
 log.debug(await eventStreamOnline.getCliTestCommand());
 log.debug(await eventStreamOffline.getCliTestCommand());
 log.debug(await eventStreamChange.getCliTestCommand());
+
+// Notify start
+log.info("Emote Counter initialized.");
