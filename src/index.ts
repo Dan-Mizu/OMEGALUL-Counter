@@ -65,9 +65,12 @@ async function getCurrentCategoryData(): Promise<Record<string, any>> {
 }
 
 // init stream data
-async function streamStart(_event: EventSubStreamOnlineEvent): Promise<void> {
+async function streamStart(event: EventSubStreamOnlineEvent): Promise<void> {
+	// get stream
+	const stream = await event.getStream();
+
 	// push to database
-	database.setValue("stream/" + [Date.now()], {
+	database.setValue(config.twitchUserID + "/" + stream.id, {
 		marker: {
 			[Date.now()]: {
 				type: "start",
@@ -76,91 +79,154 @@ async function streamStart(_event: EventSubStreamOnlineEvent): Promise<void> {
 			},
 		},
 	});
+
+	// log
+	log.message("[" + stream.id + '] Stream "' + stream.title + '" started.');
 }
 
 // get category data
 async function categoryChanged(
 	event: EventSubChannelUpdateEvent
 ): Promise<void> {
+	// get stream
+	const stream = await (await event.getBroadcaster()).getStream();
+
+	// no stream found
+	if (!stream) return;
+
+	// get stream ID
+	const streamID = stream.id;
+
+	// get last marker key (either stream start or a category change)
+	const lastMarker = await database.getLastKey(
+		config.twitchUserID + "/" + streamID + "/marker"
+	);
+
+	// last marker is missing (aka no stream start), then cancel
+	if (!lastMarker) return;
+
+	// get last marker's emote count (either stream start or a category change)
+	const lastEmoteCount = await database.getValue(
+		config.twitchUserID +
+			"/" +
+			streamID +
+			"/marker/" +
+			lastMarker +
+			"/emoteCount"
+	);
+
 	// get current emote count
 	const currentEmoteCount = await getCurrentEmoteCount();
 
-	// get current stream key
-	const currentStream = await database.getLastKey("stream/");
-
-	// get last marker key
-	const lastMarker = await database.getLastKey(
-		"stream/" + currentStream + "/marker"
-	);
-
-	// get last marker's emote count
-	const lastEmoteCount = await database.getValue(
-		"stream/" + currentStream + "/marker/" + lastMarker + "/emoteCount"
-	);
-
-	// if current stream or last marker is missing, then cancel
-	if (!currentStream || !lastMarker) return;
-
 	// update previous marker
-	database.updateValue("stream/" + currentStream + "/marker/" + lastMarker, {
-		emoteUsage: currentEmoteCount - lastEmoteCount,
-	});
+	database.updateValue(
+		config.twitchUserID + "/" + streamID + "/marker/" + lastMarker,
+		{
+			emoteUsage: currentEmoteCount - lastEmoteCount,
+		}
+	);
 
 	// add new marker
-	database.updateValue("stream/" + currentStream + "/marker/" + Date.now(), {
-		type: "category_changed",
-		category: {
-			id: event.categoryId,
-			name: event.categoryName,
-		},
-		emoteCount: currentEmoteCount,
-	});
+	database.updateValue(
+		config.twitchUserID + "/" + streamID + "/marker/" + Date.now(),
+		{
+			type: "category_changed",
+			category: {
+				id: event.categoryId,
+				name: event.categoryName,
+			},
+			emoteCount: currentEmoteCount,
+		}
+	);
+
+	// log
+	log.message(
+		"[" +
+			stream.id +
+			'] Stream "' +
+			stream.title +
+			'" category changed to ' +
+			event.categoryName
+	);
 }
 
 // get stream end data
-async function streamEnd(_event: EventSubStreamOfflineEvent): Promise<void> {
+async function streamEnd(event: EventSubStreamOfflineEvent): Promise<void> {
+	// get stream
+	const stream = await (await event.getBroadcaster()).getStream();
+
+	// no stream found
+	if (!stream) return;
+
+	// get first marker key (stream start marker)
+	const firstMarker = await database.getFirstKey(
+		config.twitchUserID + "/" + stream.id + "/marker"
+	);
+
+	// get first marker's emote count (stream start marker)
+	const firstEmoteCount = await database.getValue(
+		config.twitchUserID +
+			"/" +
+			stream.id +
+			"/marker/" +
+			firstMarker +
+			"/emoteCount"
+	);
+
+	// get last marker key (either stream start or a category change)
+	const lastMarker = await database.getLastKey(
+		config.twitchUserID + "/" + stream.id + "/marker"
+	);
+
+	// get last marker's emote count (either stream start or a category change)
+	const lastEmoteCount = await database.getValue(
+		config.twitchUserID +
+			"/" +
+			stream.id +
+			"/marker/" +
+			lastMarker +
+			"/emoteCount"
+	);
+
 	// get current emote count
 	const currentEmoteCount = await getCurrentEmoteCount();
 
-	// get current stream key
-	const currentStream = await database.getLastKey("stream");
-
-	// get first marker key
-	const firstMarker = await database.getFirstKey(
-		"stream/" + currentStream + "/marker"
-	);
-
-	// get first marker's emote count
-	const firstEmoteCount = await database.getValue(
-		"stream/" + currentStream + "/marker/" + firstMarker + "/emoteCount"
-	);
-
-	// get last marker key
-	const lastMarker = await database.getLastKey(
-		"stream/" + currentStream + "/marker"
-	);
-
-	// get last marker's emote count
-	const lastEmoteCount = await database.getValue(
-		"stream/" + currentStream + "/marker/" + lastMarker + "/emoteCount"
-	);
-
 	// update total emote count for this stream
-	database.updateValue("stream/" + currentStream, {
+	database.updateValue(config.twitchUserID + "/" + stream.id, {
 		emoteUsage: currentEmoteCount - firstEmoteCount,
 	});
 
-	// update previous marker
-	database.updateValue("stream/" + currentStream + "/marker/" + lastMarker, {
-		emoteUsage: currentEmoteCount - lastEmoteCount,
-	});
+	// update previous marker with stream information and total emote usage
+	database.updateValue(
+		config.twitchUserID + "/" + stream.id + "/marker/" + lastMarker,
+		{
+			title: stream.title,
+			thumbnail: stream.thumbnailUrl,
+			startDate: stream.startDate,
+			viewers: stream.viewers,
+			emoteUsage: currentEmoteCount - lastEmoteCount,
+		}
+	);
 
 	// add new marker
-	database.updateValue("stream/" + currentStream + "/marker/" + Date.now(), {
-		type: "end",
-		category: await getCurrentCategoryData(),
-		emoteCount: currentEmoteCount,
-	});
+	database.updateValue(
+		config.twitchUserID + "/" + stream.id + "/marker/" + Date.now(),
+		{
+			type: "end",
+			category: await getCurrentCategoryData(),
+			emoteCount: currentEmoteCount,
+		}
+	);
+
+	// log
+	log.message(
+		"[" +
+			stream.id +
+			'] Stream "' +
+			stream.title +
+			'" ended. Total Counted Emotes: ' +
+			(currentEmoteCount - firstEmoteCount)
+	);
 }
 
 // get listener

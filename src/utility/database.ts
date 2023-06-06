@@ -21,6 +21,9 @@ export default {
 		value: any,
 		databaseType: string = "realtime"
 	): void {
+		// database write disabled
+		if (!config.writeToDatabase) return;
+
 		// realtime database
 		if (databaseType === "realtime") realtimeDatabase.ref(path).set(value);
 		// firestore database
@@ -36,6 +39,9 @@ export default {
 		value: any,
 		databaseType: string = "realtime"
 	): void {
+		// database write disabled
+		if (!config.writeToDatabase) return;
+
 		// realtime database
 		if (databaseType === "realtime")
 			realtimeDatabase.ref(path).update(value);
@@ -142,6 +148,9 @@ export default {
 		path: string,
 		databaseType: string = "firestore"
 	): Promise<void> {
+		// database write disabled
+		if (!config.writeToDatabase) return;
+
 		// realtime database
 		if (databaseType === "realtime") {
 		}

@@ -1,5 +1,6 @@
 {
     "debug": true,
+    "writeToDatabase": false,
     "useProxy": false,
     "paths": {
         "logs": "logs"

@@ -43,7 +43,7 @@ export default class api {
 		if (this.username) return this.username;
 
 		// get username from twitch
-		await this.getTwitchData(
+		await this.getTwitchUserData(
 			{ id: this.userID },
 			(response: AxiosResponse) => {
 				this.username = response.data.data[0].display_name;
@@ -52,6 +52,15 @@ export default class api {
 
 		// return new username
 		return this.username;
+	}
+
+	async getStreamData(): Promise<any> {
+		await this.getTwitchStreamData(
+			{ user_id: this.userID },
+			(response: AxiosResponse) => {
+				return response.data.data[0];
+			}
+		);
 	}
 
 	async getTwitchAccessToken(): Promise<string> {
@@ -128,7 +137,7 @@ export default class api {
 		return this.twitchAccessToken;
 	}
 
-	async getTwitchData(
+	async getTwitchUserData(
 		data: {},
 		success: (response: AxiosResponse) => void,
 		fail?: (err: AxiosError) => void
@@ -147,6 +156,28 @@ export default class api {
 		} catch (err) {
 			if (fail) fail(err);
 			log.error("Failed Twitch User Retrieval:", err);
+		}
+	}
+
+	async getTwitchStreamData(
+		data: {},
+		success: (response: AxiosResponse) => void,
+		fail?: (err: AxiosError) => void
+	): Promise<void> {
+		try {
+			// get access token
+			const accessToken = await this.getTwitchAccessToken();
+			const response: AxiosResponse = await this.twitchAPI.get("streams", {
+				params: data,
+				headers: {
+					"Client-Id": config.twitch.client_id,
+					Authorization: "Bearer " + accessToken,
+				},
+			});
+			success(response);
+		} catch (err) {
+			if (fail) fail(err);
+			log.error("Failed Twitch Stream Data Retrieval:", err);
 		}
 	}
 
