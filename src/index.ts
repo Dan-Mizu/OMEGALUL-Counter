@@ -335,24 +335,29 @@ async function updateStreamData(
 	else if (!streamUpdate && localStreamData) {
 		// check for stream data update
 		if (queriedStreamData) {
-			// store largest viewer count
-			if (queriedStreamData.viewers > localStreamData.viewer_count) {
-				// get all local stream data
-				let allLocalStreamData = await temp.getFromTempFile("stream")[
-					config.twitchUserID
-				];
+			// get all local stream data
+			let allLocalStreamData = await temp.getFromTempFile("stream")[
+				config.twitchUserID
+			];
 
-				// update with larger viewer count
-				allLocalStreamData[config.twitchUserID].viewer_count =
-					queriedStreamData.viewers;
+			// update local stream data
+			allLocalStreamData[config.twitchUserID] = {
+				id: localStreamData.id,
+				// new category info?
+				game_id: queriedStreamData.gameId,
+				game_name: queriedStreamData.gameName,
+				// new title?
+				title: queriedStreamData.title,
+				// keep largest viewer count
+				viewer_count:
+					queriedStreamData.viewers > localStreamData.viewer_count
+						? queriedStreamData.viewers
+						: localStreamData.viewer_count,
+				started_at: localStreamData.startDate,
+			};
 
-				// store updated local stream data
-				temp.writeToTempFile("stream", allLocalStreamData);
-			}
-
-			// title changed
-
-			// category changed
+			// store updated local stream data
+			temp.writeToTempFile("stream", allLocalStreamData);
 		}
 		// no queried stream data found (end stream)
 		else {
@@ -406,7 +411,7 @@ async function updateStreamData(
 		// store local stream data
 		temp.writeToTempFile("stream", streamData);
 
-		// store stream info and start marker
+		// store stream info and marker
 		database.setValue(config.twitchUserID + "/" + queriedStreamData.id, {
 			title: queriedStreamData.title,
 			startDate: queriedStreamData.startDate,
@@ -435,78 +440,6 @@ async function updateStreamData(
 
 	// no provided stream data, local stream data, or queried stream data? 🏖️🐎 MAN (ignore)
 	else if (!streamUpdate && !localStreamData && !queriedStreamData) return;
-
-	// // regular query
-	// if (!streamUpdate) {
-	// 	// init stream data
-	// 	let streamData: any;
-
-	// 	// get stream data
-	// 	try {
-	// 		// query from twitch api
-	// 		streamData = await eventSub.apiClient.streams.getStreamByUserId(
-	// 			config.twitchUserID
-	// 		);
-
-	// 		// reformat data
-	// 		streamData = {
-	// 			[config.twitchUserID]: {
-	// 				id: streamData.id,
-	// 				game_id: streamData.gameId,
-	// 				game_name: streamData.gameName,
-	// 				title: streamData.title,
-	// 				viewer_count: streamData.viewers,
-	// 				started_at: streamData.startDate,
-	// 			},
-	// 		};
-	// 	} catch (error) {
-	// 		log.error(error);
-	// 	}
-
-	// 	// get stored stream data
-	// 	const streamState = await temp.getFromTempFile("stream");
-
-	// 	// update state
-	// 	if (streamData && streamState) {
-	// 		// store largest viewer count
-	// 		if (
-	// 			streamState[config.twitchUserID].viewer_count >
-	// 			streamData[config.twitchUserID].viewer_count
-	// 		)
-	// 			streamData[config.twitchUserID].viewer_count =
-	// 				streamState[config.twitchUserID].viewer_count;
-
-	// 		// stream id does not match (stream restart)
-	// 		if (
-	// 			streamState[config.twitchUserID].id ===
-	// 			streamData[config.twitchUserID].id
-	// 		) {
-	// 			// end old stream
-	// 			database.updateValue(
-	// 				config.twitchUserID +
-	// 					"/" +
-	// 					streamState[config.twitchUserID].id,
-	// 				{}
-	// 			);
-
-	// 			// start new stream
-	// 			// update database
-	// 			// new state
-	// 		}
-	// 	}
-
-	// 	// stream not found and stream state exists (stream went offline)
-	// 	if (!streamData && streamState) {
-	// 		// update database
-	// 		// delete state
-	// 	}
-
-	// 	// stream found but stream state not found (stream just started)
-	// 	if (streamData && !streamState) {
-	// 		// update database
-	// 		// new state
-	// 	}
-	// }
 }
 
 // get listener
