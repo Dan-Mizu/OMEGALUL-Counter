@@ -98,6 +98,9 @@ async function categoryChanged(
 		"stream/" + currentStream + "/marker/" + lastMarker + "/emoteCount"
 	);
 
+	// if current stream or last marker is missing, then cancel
+	if (!currentStream || !lastMarker) return;
+
 	// update previous marker
 	database.updateValue("stream/" + currentStream + "/marker/" + lastMarker, {
 		emoteUsage: currentEmoteCount - lastEmoteCount,
@@ -178,6 +181,6 @@ const eventStreamChange = listener.onChannelUpdate(
 );
 
 // DEBUG
-log.message(await eventStreamOnline.getCliTestCommand());
-log.message(await eventStreamOffline.getCliTestCommand());
-log.message(await eventStreamChange.getCliTestCommand());
+log.debug(await eventStreamOnline.getCliTestCommand());
+log.debug(await eventStreamOffline.getCliTestCommand());
+log.debug(await eventStreamChange.getCliTestCommand());

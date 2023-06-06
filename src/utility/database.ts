@@ -79,7 +79,7 @@ export default {
 	getLastKey: async function (
 		path: string,
 		databaseType: string = "realtime"
-	) {
+	): Promise<any> {
 		// init value
 		let key: string;
 
@@ -93,7 +93,10 @@ export default {
 				.limitToLast(1)
 				.get()
 				.then((snapshot: firebase.database.DataSnapshot) => {
-					key = Object.keys(snapshot.val())[0];
+					key =
+						snapshot.val() != null
+							? Object.keys(snapshot.val())[0]
+							: null;
 				});
 		// firestore database
 		else if (databaseType === "firestore") {
@@ -106,7 +109,7 @@ export default {
 	getFirstKey: async function (
 		path: string,
 		databaseType: string = "realtime"
-	) {
+	): Promise<any> {
 		// init value
 		let key: string;
 
@@ -120,7 +123,10 @@ export default {
 				.limitToFirst(1)
 				.get()
 				.then((snapshot: firebase.database.DataSnapshot) => {
-					key = Object.keys(snapshot.val())[0];
+					key =
+						snapshot.val() != null
+							? Object.keys(snapshot.val())[0]
+							: null;
 				});
 		// firestore database
 		else if (databaseType === "firestore") {
