@@ -168,6 +168,12 @@ console.warn = warn;
 console.info = info;
 console.debug = debug;
 
+// log crashes
+process.on("uncaughtException", (err: Error) => {
+	error(err);
+	process.exit(1);
+});
+
 export default {
 	message,
 	error,
