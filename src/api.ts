@@ -55,12 +55,19 @@ export default class api {
 	}
 
 	async getStreamData(): Promise<any> {
+		// init stream data
+		let data: any;
+
+		// get stream data from twitch
 		await this.getTwitchStreamData(
 			{ user_id: this.userID },
 			(response: AxiosResponse) => {
-				return response.data.data[0];
+				data = response.data.data[0];
 			}
 		);
+
+		// return data
+		return data ? data : null;
 	}
 
 	async getTwitchAccessToken(): Promise<string> {
@@ -167,13 +174,16 @@ export default class api {
 		try {
 			// get access token
 			const accessToken = await this.getTwitchAccessToken();
-			const response: AxiosResponse = await this.twitchAPI.get("streams", {
-				params: data,
-				headers: {
-					"Client-Id": config.twitch.client_id,
-					Authorization: "Bearer " + accessToken,
-				},
-			});
+			const response: AxiosResponse = await this.twitchAPI.get(
+				"streams",
+				{
+					params: data,
+					headers: {
+						"Client-Id": config.twitch.client_id,
+						Authorization: "Bearer " + accessToken,
+					},
+				}
+			);
 			success(response);
 		} catch (err) {
 			if (fail) fail(err);

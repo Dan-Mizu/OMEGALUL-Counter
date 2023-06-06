@@ -2,7 +2,6 @@
     "# streamer user ID": {
         "# stream ID": {
             "title": "# Stream Title",
-            "thumbnail": "# Stream Thumbnail URL",
             "startDate": "# Stream Start Date",
             "viewers": 69,
             "emoteUsage": 100,
