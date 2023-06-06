@@ -5,7 +5,6 @@ import { getFirestore } from "firebase-admin/firestore";
 
 // config
 import config from "../../config/config.json" assert { type: "json" };
-import log from "./log.js";
 
 // init
 initializeApp({
@@ -21,7 +20,7 @@ export default {
 		path: string,
 		value: any,
 		databaseType: string = "realtime"
-	) {
+	): void {
 		// realtime database
 		if (databaseType === "realtime") realtimeDatabase.ref(path).set(value);
 		// firestore database
@@ -36,7 +35,7 @@ export default {
 		path: string,
 		value: any,
 		databaseType: string = "realtime"
-	) {
+	): void {
 		// realtime database
 		if (databaseType === "realtime")
 			realtimeDatabase.ref(path).update(value);
@@ -48,9 +47,12 @@ export default {
 	},
 
 	// get value in database
-	getValue: async function (path: string, databaseType: string = "realtime") {
+	getValue: async function (
+		path: string,
+		databaseType: string = "realtime"
+	): Promise<any> {
 		// init value
-		let value;
+		let value: any;
 
 		// realtime database
 		if (databaseType === "realtime")
@@ -139,7 +141,7 @@ export default {
 	deletePath: async function (
 		path: string,
 		databaseType: string = "firestore"
-	) {
+	): Promise<void> {
 		// realtime database
 		if (databaseType === "realtime") {
 		}
@@ -155,7 +157,7 @@ export default {
 	pathExists: async function (
 		path: string,
 		databaseType: string = "realtime"
-	) {
+	): Promise<boolean> {
 		// init exists
 		let exists: boolean = false;
 

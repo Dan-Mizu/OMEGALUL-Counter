@@ -105,7 +105,7 @@ let message = function (...args: any[]): void {
 	consoleLog.apply(console, args);
 };
 
-let error = function (...args: any[]) {
+let error = function (...args: any[]): void {
 	// prepend prefix
 	args.unshift(getPrefix());
 
@@ -119,7 +119,7 @@ let error = function (...args: any[]) {
 	consoleError.apply(console, args);
 };
 
-let warn = function (...args: any[]) {
+let warn = function (...args: any[]): void {
 	// prepend prefix
 	args.unshift(getPrefix());
 
@@ -133,7 +133,7 @@ let warn = function (...args: any[]) {
 	consoleWarn.apply(console, args);
 };
 
-let info = function (...args: any[]) {
+let info = function (...args: any[]): void {
 	// prepend prefix
 	args.unshift(getPrefix());
 
@@ -147,7 +147,7 @@ let info = function (...args: any[]) {
 	consoleInfo.apply(console, args);
 };
 
-let debug = function (...args: any[]) {
+let debug = function (...args: any[]): void {
 	// prepend prefix
 	args.unshift(getPrefix());
 

@@ -160,7 +160,13 @@ export default {
 			depth = isNaN(+depth) ? 1 : depth;
 
 			// (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
-			function _build(key, val, depth, o?, a?) {
+			function _build(
+				_key: string,
+				val: Record<string, any> | Record<string, any>[],
+				depth: number,
+				o?: {},
+				a?: boolean
+			) {
 				return !val || typeof val != "object"
 					? val
 					: ((a = Array.isArray(val)),
