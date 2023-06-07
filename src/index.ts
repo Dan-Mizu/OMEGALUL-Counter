@@ -5,16 +5,15 @@ import {
 	EventSubChannelUpdateEvent,
 	EventSubStreamOfflineEvent,
 } from "@twurple/eventsub-base";
-import { HelixStream, HelixUser } from "@twurple/api/lib";
 import api from "./api.js";
 import eventSub from "./eventSub.js";
 import utility from "./utility/utility.js";
 import log from "./utility/log.js";
+import database from "./utility/database.js";
+import temp from "./utility/temp.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
-import database from "./utility/database.js";
-import temp from "./utility/temp.js";
 
 // init api
 const twitchAPI = new api(config.twitchUserID);
@@ -62,11 +61,6 @@ async function updateStreamData(
 	// query stream data from twitch api
 	const queriedStreamData =
 		await eventSub.apiClient.streams.getStreamByUserId(config.twitchUserID);
-
-	// DEBUG
-	log.debug(providedStreamData);
-	log.debug(localStreamData);
-	log.debug(queriedStreamData);
 
 	// compare provided stream data against local stream data
 	if (providedStreamData && localStreamData) {
@@ -221,10 +215,28 @@ async function updateStreamData(
 					);
 				}
 				// stream start event where theres local and provided data, but no queried data? wtf? (ignore)
-				else return;
+				else {
+					// log
+					log.warn(
+						"Received Stream Start Event and have local and provided data, but wasn't able to get any data from Twitch API.",
+						"Provided Data: " + providedStreamData,
+						"Local Data: " + localStreamData,
+						"Queried Data " + queriedStreamData
+					);
+					return;
+				}
 			}
 			// local and event stream ID match. routine query caught stream start event first LOL (ignore)
-			else return;
+			else {
+				// log
+				log.warn(
+					"Received Stream Start Event, but already caught event with routine query.",
+					"Provided Data: " + providedStreamData,
+					"Local Data: " + localStreamData,
+					"Queried Data " + queriedStreamData
+				);
+				return;
+			}
 		}
 
 		// use local stream data with category change event update (might overlap if routine query caught it first... hmm...)
@@ -237,7 +249,16 @@ async function updateStreamData(
 				);
 
 				// last marker is missing (aka no stream start), then cancel
-				if (!lastMarker) return;
+				if (!lastMarker) {
+					// log
+					log.warn(
+						"Received Category Change Event, but have no record of a stream starting.",
+						"Provided Data: " + providedStreamData,
+						"Local Data: " + localStreamData,
+						"Queried Data " + queriedStreamData
+					);
+					return;
+				}
 
 				// get last marker's emote count (either stream start or a category change)
 				const lastEmoteCount = await database.getValue(
@@ -289,7 +310,16 @@ async function updateStreamData(
 				);
 			}
 			// a category change near/after the stream ended or before it began. either way its weird. (ignore)
-			else return;
+			else {
+				// log
+				log.warn(
+					"Received Category Change Event, but there does not seem to be an active stream.",
+					"Provided Data: " + providedStreamData,
+					"Local Data: " + localStreamData,
+					"Queried Data " + queriedStreamData
+				);
+				return;
+			}
 		}
 
 		// compare local and queried stream data for a representation of what happened
@@ -692,7 +722,16 @@ async function updateStreamData(
 		}
 
 		// streamer probably changed category before starting stream. typical. (ignore)
-		else if (providedStreamData.type === "category_changed") return;
+		else if (providedStreamData.type === "category_changed") {
+			// log
+			log.warn(
+				"Received Category Changed Event with no local data, and therefore no record of a stream starting.",
+				"Provided Data: " + providedStreamData,
+				"Local Data: " + localStreamData,
+				"Queried Data " + queriedStreamData
+			);
+			return;
+		}
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
 		else if (providedStreamData.type === "end" && queriedStreamData) {
 			// get current emote count
@@ -795,6 +834,14 @@ async function updateStreamData(
 			// check for last stream in database without end marker
 
 			// shit. an end event without a stream to pin it to. this can't be good... (ignore)
+
+			// log
+			log.warn(
+				"Received End Event, but have no record of current stream.",
+				"Provided Data: " + providedStreamData,
+				"Local Data: " + localStreamData,
+				"Queried Data " + queriedStreamData
+			);
 			return;
 		}
 	}
@@ -833,7 +880,16 @@ async function updateStreamData(
 				);
 
 				// last marker is missing (aka no stream start), then cancel
-				if (!lastMarker) return;
+				if (!lastMarker) {
+					// log
+					log.warn(
+						"It looks like the category has changed, but I do not have a reference to a previous category or stream start.",
+						"Provided Data: " + providedStreamData,
+						"Local Data: " + localStreamData,
+						"Queried Data " + queriedStreamData
+					);
+					return;
+				}
 
 				// get last marker's emote count (either stream start or a category change)
 				const lastEmoteCount = await database.getValue(
@@ -1022,7 +1078,7 @@ async function updateStreamData(
 		);
 	}
 
-	// no provided stream data, local stream data, or queried stream data? 🏖️🐎 MAN (ignore)
+	// no provided stream data, local stream data, or queried stream data? 🏖️🐎 MAN (ignore, and wait for streamer to go live saj)
 	else if (!providedStreamData && !localStreamData && !queriedStreamData)
 		return;
 }
