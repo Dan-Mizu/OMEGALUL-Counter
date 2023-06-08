@@ -190,7 +190,10 @@ async function updateStreamData(
 
 					// store stream info and marker
 					database.setValue(
-						config.twitchUserID + "/" + queriedStreamData.id,
+						"stream/" +
+							config.twitchUserID +
+							"/" +
+							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
 							startDate: queriedStreamData.startDate,
@@ -553,7 +556,10 @@ async function updateStreamData(
 
 					// store stream info and marker
 					database.setValue(
-						config.twitchUserID + "/" + queriedStreamData.id,
+						"stream/" +
+							config.twitchUserID +
+							"/" +
+							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
 							startDate: queriedStreamData.startDate,
@@ -696,7 +702,7 @@ async function updateStreamData(
 
 			// store stream info and marker
 			database.setValue(
-				config.twitchUserID + "/" + providedStreamData.id,
+				"stream/" + config.twitchUserID + "/" + providedStreamData.id,
 				{
 					title: queriedStreamData.title,
 					startDate: providedStreamData.started_at,
@@ -1055,21 +1061,24 @@ async function updateStreamData(
 		temp.writeToTempFile("stream", allLocalStreamData);
 
 		// store stream info and marker
-		database.setValue(config.twitchUserID + "/" + queriedStreamData.id, {
-			title: queriedStreamData.title,
-			startDate: queriedStreamData.startDate,
-			viewers: queriedStreamData.viewers,
-			marker: {
-				[Date.now()]: {
-					type: "start",
-					category: {
-						id: queriedStreamData.gameId,
-						name: queriedStreamData.gameName,
+		database.setValue(
+			"stream/" + config.twitchUserID + "/" + queriedStreamData.id,
+			{
+				title: queriedStreamData.title,
+				startDate: queriedStreamData.startDate,
+				viewers: queriedStreamData.viewers,
+				marker: {
+					[Date.now()]: {
+						type: "start",
+						category: {
+							id: queriedStreamData.gameId,
+							name: queriedStreamData.gameName,
+						},
+						emoteCount: await getCurrentEmoteCount(),
 					},
-					emoteCount: await getCurrentEmoteCount(),
 				},
-			},
-		});
+			}
+		);
 
 		// log
 		log.message(
