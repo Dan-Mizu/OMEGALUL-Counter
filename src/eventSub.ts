@@ -32,7 +32,7 @@ export default {
 		if (this.secret != null) return this.secret;
 
 		// get secret from temp file
-		this.secret = (await database.getValue("eventSubSecret")) as string;
+		this.secret = (await database.getValue("temp/eventSubSecret")) as string;
 
 		// secret stored in temp file
 		if (this.secret != null) return this.secret;
@@ -46,7 +46,7 @@ export default {
 			.replace(/=/g, "");
 
 		// store secret in temp file
-		database.setValue("eventSubSecret", this.secret);
+		database.setValue("temp/eventSubSecret", this.secret);
 
 		// return new secret
 		return this.secret;

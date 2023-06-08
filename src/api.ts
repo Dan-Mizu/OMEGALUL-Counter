@@ -80,7 +80,7 @@ export default class api {
 
 		// get access token data from temp file
 		const accessTokenData = (await database.getValue(
-			"access_token"
+			"temp/access_token"
 		)) as AccessTokenData;
 
 		// check temp file
@@ -129,7 +129,7 @@ export default class api {
 				Number(response.data.expires_in) + Date.now();
 
 			// save in temp file
-			database.setValue("access_token", {
+			database.setValue("temp/access_token", {
 				token: response.data.access_token,
 				expires_at: Number(response.data.expires_in) + Date.now(),
 			});
