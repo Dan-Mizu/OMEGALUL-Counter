@@ -1,7 +1,7 @@
 // imports
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import tempData from "./utility/temp.js";
 import log from "./utility/log.js";
+import database from "./utility/database.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
@@ -79,7 +79,7 @@ export default class api {
 			return this.twitchAccessToken;
 
 		// get access token data from temp file
-		const accessTokenData = (await tempData.getFromTempFile(
+		const accessTokenData = (await database.getValue(
 			"access_token"
 		)) as AccessTokenData;
 
@@ -129,7 +129,7 @@ export default class api {
 				Number(response.data.expires_in) + Date.now();
 
 			// save in temp file
-			await tempData.writeToTempFile("access_token", {
+			database.setValue("access_token", {
 				token: response.data.access_token,
 				expires_at: Number(response.data.expires_in) + Date.now(),
 			});

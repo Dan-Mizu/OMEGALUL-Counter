@@ -8,7 +8,7 @@ import {
 	ReverseProxyAdapter,
 } from "@twurple/eventsub-http";
 import { NgrokAdapter } from "@twurple/eventsub-ngrok";
-import tempData from "./utility/temp.js";
+import database from "./utility/database";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
@@ -32,9 +32,7 @@ export default {
 		if (this.secret != null) return this.secret;
 
 		// get secret from temp file
-		this.secret = (await tempData.getFromTempFile(
-			"eventSubSecret"
-		)) as string;
+		this.secret = (await database.getValue("eventSubSecret")) as string;
 
 		// secret stored in temp file
 		if (this.secret != null) return this.secret;
@@ -48,7 +46,7 @@ export default {
 			.replace(/=/g, "");
 
 		// store secret in temp file
-		await tempData.writeToTempFile("eventSubSecret", this.secret);
+		database.setValue("eventSubSecret", this.secret);
 
 		// return new secret
 		return this.secret;
