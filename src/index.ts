@@ -1113,7 +1113,7 @@ log.debug(await eventStreamChange.getCliTestCommand());
 log.info("Emote Counter initialized.");
 
 // query for stream data every 5 minutes
-setInterval(async () => updateStreamData, 5 * 60 * 1000);
+setInterval(updateStreamData, 5 * 60 * 1000);
 
 // query on startup
 updateStreamData();
