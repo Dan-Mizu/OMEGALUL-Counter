@@ -8,7 +8,7 @@ import {
 	ReverseProxyAdapter,
 } from "@twurple/eventsub-http";
 import { NgrokAdapter } from "@twurple/eventsub-ngrok";
-import database from "./utility/database";
+import database from "./utility/database.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
