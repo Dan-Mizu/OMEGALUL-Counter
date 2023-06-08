@@ -10,7 +10,6 @@ import eventSub from "./eventSub.js";
 import utility from "./utility/utility.js";
 import log from "./utility/log.js";
 import database from "./utility/database.js";
-import temp from "./utility/temp.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
@@ -54,9 +53,9 @@ async function updateStreamData(
 		  }
 ) {
 	// get local stream data
-	let localStreamData = await temp.getFromTempFile("stream")[
-		config.twitchUserID
-	];
+	let localStreamData = await database.getValue(
+		"temp/stream/" + config.twitchUserID
+	);
 
 	// query stream data from twitch api
 	const queriedStreamData =
@@ -157,11 +156,7 @@ async function updateStreamData(
 					);
 
 					// clear local stream data
-					let allLocalStreamData = await temp.getFromTempFile(
-						"stream"
-					);
-					delete allLocalStreamData[config.twitchUserID];
-					temp.writeToTempFile("stream", allLocalStreamData);
+					database.deletePath("temp/stream/" + config.twitchUserID);
 
 					// log
 					log.message(
@@ -177,16 +172,16 @@ async function updateStreamData(
 					// START STREAM
 
 					// format and store local stream data
-					allLocalStreamData = await temp.getFromTempFile("stream");
-					allLocalStreamData[config.twitchUserID] = {
-						id: queriedStreamData.id,
-						game_id: queriedStreamData.gameId,
-						game_name: queriedStreamData.gameName,
-						title: queriedStreamData.title,
-						viewer_count: queriedStreamData.viewers,
-						started_at: queriedStreamData.startDate,
-					};
-					temp.writeToTempFile("stream", allLocalStreamData);
+					database.setValue("temp/stream/" + config.twitchUserID, {
+						[config.twitchUserID]: {
+							id: queriedStreamData.id,
+							game_id: queriedStreamData.gameId,
+							game_name: queriedStreamData.gameName,
+							title: queriedStreamData.title,
+							viewer_count: queriedStreamData.viewers,
+							started_at: queriedStreamData.startDate,
+						},
+					});
 
 					// store stream info and marker
 					database.setValue(
@@ -416,11 +411,7 @@ async function updateStreamData(
 					);
 
 					// clear local stream data
-					let allLocalStreamData = await temp.getFromTempFile(
-						"stream"
-					);
-					delete allLocalStreamData[config.twitchUserID];
-					temp.writeToTempFile("stream", allLocalStreamData);
+					database.deletePath("temp/stream/" + config.twitchUserID);
 
 					// log
 					log.message(
@@ -523,11 +514,7 @@ async function updateStreamData(
 					);
 
 					// clear local stream data
-					let allLocalStreamData = await temp.getFromTempFile(
-						"stream"
-					);
-					delete allLocalStreamData[config.twitchUserID];
-					temp.writeToTempFile("stream", allLocalStreamData);
+					database.deletePath("temp/stream/" + config.twitchUserID);
 
 					// log
 					log.message(
@@ -543,16 +530,16 @@ async function updateStreamData(
 					// START STREAM
 
 					// format and store local stream data
-					allLocalStreamData = await temp.getFromTempFile("stream");
-					allLocalStreamData[config.twitchUserID] = {
-						id: queriedStreamData.id,
-						game_id: queriedStreamData.gameId,
-						game_name: queriedStreamData.gameName,
-						title: queriedStreamData.title,
-						viewer_count: queriedStreamData.viewers,
-						started_at: queriedStreamData.startDate,
-					};
-					temp.writeToTempFile("stream", allLocalStreamData);
+					database.setValue("temp/stream/" + config.twitchUserID, {
+						[config.twitchUserID]: {
+							id: queriedStreamData.id,
+							game_id: queriedStreamData.gameId,
+							game_name: queriedStreamData.gameName,
+							title: queriedStreamData.title,
+							viewer_count: queriedStreamData.viewers,
+							started_at: queriedStreamData.startDate,
+						},
+					});
 
 					// store stream info and marker
 					database.setValue(
@@ -666,9 +653,7 @@ async function updateStreamData(
 				);
 
 				// clear local stream data
-				let allLocalStreamData = await temp.getFromTempFile("stream");
-				delete allLocalStreamData[config.twitchUserID];
-				temp.writeToTempFile("stream", allLocalStreamData);
+				database.deletePath("temp/stream/" + config.twitchUserID);
 
 				// log
 				log.message(
@@ -689,16 +674,14 @@ async function updateStreamData(
 		// start stream event with queried stream data, caught before routine query did (start stream)
 		if (providedStreamData.type === "start" && queriedStreamData) {
 			// format and store local stream data
-			let allLocalStreamData = await temp.getFromTempFile("stream");
-			allLocalStreamData[config.twitchUserID] = {
+			database.setValue("temp/stream/" + config.twitchUserID, {
 				id: providedStreamData.id,
 				game_id: queriedStreamData.gameId,
 				game_name: queriedStreamData.gameName,
 				title: queriedStreamData.title,
 				viewer_count: queriedStreamData.viewers,
 				started_at: providedStreamData.started_at,
-			};
-			temp.writeToTempFile("stream", allLocalStreamData);
+			});
 
 			// store stream info and marker
 			database.setValue(
@@ -819,9 +802,7 @@ async function updateStreamData(
 			);
 
 			// clear local stream data
-			let allLocalStreamData = await temp.getFromTempFile("stream");
-			delete allLocalStreamData[config.twitchUserID];
-			temp.writeToTempFile("stream", allLocalStreamData);
+			database.deletePath("temp/stream/" + config.twitchUserID);
 
 			// log
 			log.message(
@@ -857,10 +838,12 @@ async function updateStreamData(
 		// check for stream data update
 		if (queriedStreamData) {
 			// get all local stream data
-			let allLocalStreamData = await temp.getFromTempFile("stream");
+			let allLocalStreamData = await database.getValue(
+				"temp/stream/" + config.twitchUserID
+			);
 
 			// update local stream data
-			allLocalStreamData[config.twitchUserID] = {
+			allLocalStreamData = {
 				id: localStreamData.id,
 				// new category info?
 				game_id: queriedStreamData.gameId,
@@ -876,7 +859,10 @@ async function updateStreamData(
 			};
 
 			// store updated local stream data
-			temp.writeToTempFile("stream", allLocalStreamData);
+			database.setValue(
+				"temp/stream/" + config.twitchUserID,
+				allLocalStreamData
+			);
 
 			// new category? update database with new category marker
 			if (queriedStreamData.gameId !== localStreamData.gameId) {
@@ -1029,9 +1015,7 @@ async function updateStreamData(
 			);
 
 			// clear local stream data
-			let allLocalStreamData = await temp.getFromTempFile("stream");
-			delete allLocalStreamData[config.twitchUserID];
-			temp.writeToTempFile("stream", allLocalStreamData);
+			database.deletePath("temp/stream/" + config.twitchUserID);
 
 			// log
 			log.message(
@@ -1049,16 +1033,14 @@ async function updateStreamData(
 	// no provided or local stream data found but queried stream data found (create local stream data and start stream)
 	else if (!providedStreamData && !localStreamData && queriedStreamData) {
 		// format and store local stream data
-		let allLocalStreamData = await temp.getFromTempFile("stream");
-		allLocalStreamData[config.twitchUserID] = {
+		database.setValue("temp/stream/" + config.twitchUserID, {
 			id: queriedStreamData.id,
 			game_id: queriedStreamData.gameId,
 			game_name: queriedStreamData.gameName,
 			title: queriedStreamData.title,
 			viewer_count: queriedStreamData.viewers,
 			started_at: queriedStreamData.startDate,
-		};
-		temp.writeToTempFile("stream", allLocalStreamData);
+		});
 
 		// store stream info and marker
 		database.setValue(
