@@ -91,8 +91,8 @@ async function updateStreamData(
 						{
 							type: "end",
 							category: {
-								id: localStreamData.category_id,
-								name: localStreamData.category_name,
+								id: localStreamData.game_id,
+								name: localStreamData.game_name,
 							},
 							emoteCount: currentEmoteCount,
 						}
@@ -445,8 +445,8 @@ async function updateStreamData(
 						{
 							type: "end",
 							category: {
-								id: localStreamData.category_id,
-								name: localStreamData.category_name,
+								id: localStreamData.game_id,
+								name: localStreamData.game_name,
 							},
 							emoteCount: currentEmoteCount,
 						}
@@ -587,7 +587,7 @@ async function updateStreamData(
 					{
 						type: "end",
 						category: {
-							id: localStreamData.gameId,
+							id: queriedStreamData.game_id,
 							name: localStreamData.gameName,
 						},
 						emoteCount: currentEmoteCount,
@@ -641,7 +641,7 @@ async function updateStreamData(
 					config.twitchUserID + "/" + localStreamData.id,
 					{
 						title: localStreamData.title,
-						viewers: localStreamData.viewers,
+						viewers: queriedStreamData.viewer_count,
 						// total emote usage
 						emoteUsage: currentEmoteCount - firstEmoteCount,
 						// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
@@ -861,7 +861,7 @@ async function updateStreamData(
 			);
 
 			// new category? update database with new category marker
-			if (queriedStreamData.game_id !== localStreamData.gameId) {
+			if (queriedStreamData.game_id !== queriedStreamData.game_id) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
 					config.twitchUserID + "/" + localStreamData.id + "/marker"
@@ -871,7 +871,7 @@ async function updateStreamData(
 				if (!lastMarker) {
 					// log
 					log.warn(
-						"It looks like the category has changed, but I do not have a reference to a previous category or stream start.",
+						"It looks like the category has changed, but I do not have a reference to a previous category or stream start marker.",
 						"Provided Data: " + JSON.stringify(providedStreamData),
 						"Local Data: " + JSON.stringify(localStreamData),
 						"Queried Data " + JSON.stringify(queriedStreamData)
@@ -945,8 +945,8 @@ async function updateStreamData(
 				{
 					type: "end",
 					category: {
-						id: localStreamData.category_id,
-						name: localStreamData.category_name,
+						id: localStreamData.game_id,
+						name: localStreamData.game_name,
 					},
 					emoteCount: currentEmoteCount,
 				}
