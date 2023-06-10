@@ -865,6 +865,8 @@ async function updateStreamData(
 					config.twitchUserID + "/" + localStreamData.id + "/marker"
 				);
 
+				log.info(lastMarker)
+
 				// last marker is missing (aka no stream start), then cancel
 				if (!lastMarker) {
 					// log
