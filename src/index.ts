@@ -859,7 +859,7 @@ async function updateStreamData(
 			);
 
 			// new category? update database with new category marker
-			if (queriedStreamData.game_id !== queriedStreamData.game_id) {
+			if (queriedStreamData.game_id !== localStreamData.game_id) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
 					config.twitchUserID + "/" + localStreamData.id + "/marker"
