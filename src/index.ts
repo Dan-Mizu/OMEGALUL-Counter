@@ -68,7 +68,6 @@ async function updateStreamData(
 		"Queried Data " + JSON.stringify(queriedStreamData)
 	);
 
-
 	// compare provided stream data against local stream data
 	if (providedStreamData && localStreamData) {
 		// stream start event and local data means my routine query caught it first, or there was a restart
@@ -182,10 +181,10 @@ async function updateStreamData(
 					database.setValue("temp/stream/" + config.twitchUserID, {
 						[config.twitchUserID]: {
 							id: queriedStreamData.id,
-							game_id: queriedStreamData.gameId,
-							game_name: queriedStreamData.gameName,
+							game_id: queriedStreamData.game_id,
+							game_name: queriedStreamData.game_name,
 							title: queriedStreamData.title,
-							viewer_count: queriedStreamData.viewers,
+							viewer_count: queriedStreamData.viewer_count,
 						},
 					});
 
@@ -197,13 +196,13 @@ async function updateStreamData(
 							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
-							viewers: queriedStreamData.viewers,
+							viewers: queriedStreamData.viewer_count,
 							marker: {
 								[Date.now()]: {
 									type: "start",
 									category: {
-										id: queriedStreamData.gameId,
-										name: queriedStreamData.gameName,
+										id: queriedStreamData.game_id,
+										name: queriedStreamData.game_name,
 									},
 									emoteCount: currentEmoteCount,
 								},
@@ -298,8 +297,8 @@ async function updateStreamData(
 					{
 						type: "category_changed",
 						category: {
-							id: queriedStreamData.gameId,
-							name: queriedStreamData.gameName,
+							id: queriedStreamData.game_id,
+							name: queriedStreamData.game_name,
 						},
 						emoteCount: currentEmoteCount,
 					}
@@ -309,7 +308,7 @@ async function updateStreamData(
 				log.message(
 					"[" + localStreamData.id + "]",
 					'Stream "' + localStreamData.title + '"',
-					"category changed to " + queriedStreamData.gameName
+					"category changed to " + queriedStreamData.game_name
 				);
 			}
 			// a category change near/after the stream ended or before it began. either way its weird. (ignore)
@@ -344,8 +343,8 @@ async function updateStreamData(
 						{
 							type: "end",
 							category: {
-								id: queriedStreamData.gameId,
-								name: queriedStreamData.gameName,
+								id: queriedStreamData.game_id,
+								name: queriedStreamData.game_name,
 							},
 							emoteCount: currentEmoteCount,
 						}
@@ -536,10 +535,10 @@ async function updateStreamData(
 					database.setValue("temp/stream/" + config.twitchUserID, {
 						[config.twitchUserID]: {
 							id: queriedStreamData.id,
-							game_id: queriedStreamData.gameId,
-							game_name: queriedStreamData.gameName,
+							game_id: queriedStreamData.game_id,
+							game_name: queriedStreamData.game_name,
 							title: queriedStreamData.title,
-							viewer_count: queriedStreamData.viewers,
+							viewer_count: queriedStreamData.viewer_count,
 						},
 					});
 
@@ -551,13 +550,13 @@ async function updateStreamData(
 							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
-							viewers: queriedStreamData.viewers,
+							viewers: queriedStreamData.viewer_count,
 							marker: {
 								[Date.now()]: {
 									type: "start",
 									category: {
-										id: queriedStreamData.gameId,
-										name: queriedStreamData.gameName,
+										id: queriedStreamData.game_id,
+										name: queriedStreamData.game_name,
 									},
 									emoteCount: currentEmoteCount,
 								},
@@ -676,10 +675,10 @@ async function updateStreamData(
 			// format and store local stream data
 			database.setValue("temp/stream/" + config.twitchUserID, {
 				id: providedStreamData.id,
-				game_id: queriedStreamData.gameId,
-				game_name: queriedStreamData.gameName,
+				game_id: queriedStreamData.game_id,
+				game_name: queriedStreamData.game_name,
 				title: queriedStreamData.title,
-				viewer_count: queriedStreamData.viewers,
+				viewer_count: queriedStreamData.viewer_count,
 			});
 
 			// store stream info and marker
@@ -687,13 +686,13 @@ async function updateStreamData(
 				"stream/" + config.twitchUserID + "/" + providedStreamData.id,
 				{
 					title: queriedStreamData.title,
-					viewers: queriedStreamData.viewers,
+					viewers: queriedStreamData.viewer_count,
 					marker: {
 						[Date.now()]: {
 							type: "start",
 							category: {
-								id: queriedStreamData.gameId,
-								name: queriedStreamData.gameName,
+								id: queriedStreamData.game_id,
+								name: queriedStreamData.game_name,
 							},
 							emoteCount: await getCurrentEmoteCount(),
 						},
@@ -734,8 +733,8 @@ async function updateStreamData(
 				{
 					type: "end",
 					category: {
-						id: queriedStreamData.gameId,
-						name: queriedStreamData.gameName,
+						id: queriedStreamData.game_id,
+						name: queriedStreamData.game_name,
 					},
 					emoteCount: currentEmoteCount,
 				}
@@ -788,7 +787,7 @@ async function updateStreamData(
 				config.twitchUserID + "/" + queriedStreamData.id,
 				{
 					title: queriedStreamData.title,
-					viewers: queriedStreamData.viewers,
+					viewers: queriedStreamData.viewer_count,
 					// total emote usage
 					emoteUsage: currentEmoteCount - firstEmoteCount,
 					// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
@@ -843,14 +842,15 @@ async function updateStreamData(
 			allLocalStreamData = {
 				id: localStreamData.id,
 				// new category info?
-				game_id: queriedStreamData.gameId,
-				game_name: queriedStreamData.gameName,
+				game_id: queriedStreamData.game_id,
+				game_name: queriedStreamData.game_name,
 				// new title?
 				title: queriedStreamData.title,
 				// keep largest viewer count
 				viewer_count:
-					queriedStreamData.viewers > localStreamData.viewer_count
-						? queriedStreamData.viewers
+					queriedStreamData.viewer_count >
+					localStreamData.viewer_count
+						? queriedStreamData.viewer_count
 						: localStreamData.viewer_count,
 			};
 
@@ -861,7 +861,7 @@ async function updateStreamData(
 			);
 
 			// new category? update database with new category marker
-			if (queriedStreamData.gameId !== localStreamData.gameId) {
+			if (queriedStreamData.game_id !== localStreamData.gameId) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
 					config.twitchUserID + "/" + localStreamData.id + "/marker"
@@ -914,8 +914,8 @@ async function updateStreamData(
 					{
 						type: "category_changed",
 						category: {
-							id: queriedStreamData.gameId,
-							name: queriedStreamData.gameName,
+							id: queriedStreamData.game_id,
+							name: queriedStreamData.game_name,
 						},
 						emoteCount: currentEmoteCount,
 					}
@@ -925,7 +925,7 @@ async function updateStreamData(
 				log.message(
 					"[" + localStreamData.id + "]",
 					'Stream "' + localStreamData.title + '"',
-					"category changed to " + queriedStreamData.gameName
+					"category changed to " + queriedStreamData.game_name
 				);
 			}
 		}
@@ -1030,10 +1030,10 @@ async function updateStreamData(
 		// format and store local stream data
 		database.setValue("temp/stream/" + config.twitchUserID, {
 			id: queriedStreamData.id,
-			game_id: queriedStreamData.gameId,
-			game_name: queriedStreamData.gameName,
+			game_id: queriedStreamData.game_id,
+			game_name: queriedStreamData.game_name,
 			title: queriedStreamData.title,
-			viewer_count: queriedStreamData.viewers,
+			viewer_count: queriedStreamData.viewer_count,
 		});
 
 		// store stream info and marker
@@ -1041,13 +1041,13 @@ async function updateStreamData(
 			"stream/" + config.twitchUserID + "/" + queriedStreamData.id,
 			{
 				title: queriedStreamData.title,
-				viewers: queriedStreamData.viewers,
+				viewers: queriedStreamData.viewer_count,
 				marker: {
 					[Date.now()]: {
 						type: "start",
 						category: {
-							id: queriedStreamData.gameId,
-							name: queriedStreamData.gameName,
+							id: queriedStreamData.game_id,
+							name: queriedStreamData.game_name,
 						},
 						emoteCount: await getCurrentEmoteCount(),
 					},
