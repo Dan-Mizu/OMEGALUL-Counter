@@ -81,7 +81,8 @@ async function updateStreamData(
 
 					// add new marker
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -98,7 +99,8 @@ async function updateStreamData(
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -106,7 +108,8 @@ async function updateStreamData(
 
 					// get last marker's emote count (either stream start or a category change)
 					const lastEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -116,7 +119,8 @@ async function updateStreamData(
 
 					// update previous marker with total emote usage
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -128,7 +132,8 @@ async function updateStreamData(
 
 					// get first marker key (stream start marker)
 					const firstMarker = await database.getFirstKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -146,7 +151,10 @@ async function updateStreamData(
 
 					// update stream info
 					database.updateValue(
-						config.twitchUserID + "/" + localStreamData.id,
+						"stream/" +
+							config.twitchUserID +
+							"/" +
+							localStreamData.id,
 						{
 							title: localStreamData.title,
 							viewers: localStreamData.viewer_count,
@@ -275,7 +283,8 @@ async function updateStreamData(
 
 				// update previous marker
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -287,7 +296,8 @@ async function updateStreamData(
 
 				// add new marker
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -333,7 +343,8 @@ async function updateStreamData(
 
 					// add new marker
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -350,7 +361,8 @@ async function updateStreamData(
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -358,7 +370,8 @@ async function updateStreamData(
 
 					// get last marker's emote count (either stream start or a category change)
 					const lastEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -368,7 +381,8 @@ async function updateStreamData(
 
 					// update previous marker with total emote usage
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -380,7 +394,8 @@ async function updateStreamData(
 
 					// get first marker key (stream start marker)
 					const firstMarker = await database.getFirstKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -388,7 +403,8 @@ async function updateStreamData(
 
 					// get first marker's emote count (stream start marker)
 					const firstEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -398,7 +414,10 @@ async function updateStreamData(
 
 					// update stream info
 					database.updateValue(
-						config.twitchUserID + "/" + localStreamData.id,
+						"stream/" +
+							config.twitchUserID +
+							"/" +
+							localStreamData.id,
 						{
 							title: queriedStreamData.title,
 							viewers: localStreamData.viewer_count,
@@ -435,7 +454,8 @@ async function updateStreamData(
 
 					// add new marker
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -452,7 +472,8 @@ async function updateStreamData(
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -460,7 +481,8 @@ async function updateStreamData(
 
 					// get last marker's emote count (either stream start or a category change)
 					const lastEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -470,7 +492,8 @@ async function updateStreamData(
 
 					// update previous marker with total emote usage
 					database.updateValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -482,7 +505,8 @@ async function updateStreamData(
 
 					// get first marker key (stream start marker)
 					const firstMarker = await database.getFirstKey(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker"
@@ -490,7 +514,8 @@ async function updateStreamData(
 
 					// get first marker's emote count (stream start marker)
 					const firstEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -500,7 +525,10 @@ async function updateStreamData(
 
 					// update stream info
 					database.updateValue(
-						config.twitchUserID + "/" + localStreamData.id,
+						"stream/" +
+							config.twitchUserID +
+							"/" +
+							localStreamData.id,
 						{
 							title: localStreamData.title,
 							viewers: localStreamData.viewer_count,
@@ -577,7 +605,8 @@ async function updateStreamData(
 
 				// add new marker
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -594,12 +623,17 @@ async function updateStreamData(
 
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
-					config.twitchUserID + "/" + localStreamData.id + "/marker"
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
 				);
 
 				// get last marker's emote count (either stream start or a category change)
 				const lastEmoteCount = await database.getValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -609,7 +643,8 @@ async function updateStreamData(
 
 				// update previous marker with total emote usage
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -621,12 +656,17 @@ async function updateStreamData(
 
 				// get first marker key (stream start marker)
 				const firstMarker = await database.getFirstKey(
-					config.twitchUserID + "/" + localStreamData.id + "/marker"
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
 				);
 
 				// get first marker's emote count (stream start marker)
 				const firstEmoteCount = await database.getValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -636,7 +676,7 @@ async function updateStreamData(
 
 				// update stream info
 				database.updateValue(
-					config.twitchUserID + "/" + localStreamData.id,
+					"stream/" + config.twitchUserID + "/" + localStreamData.id,
 					{
 						title: localStreamData.title,
 						viewers: queriedStreamData.viewer_count,
@@ -723,7 +763,8 @@ async function updateStreamData(
 
 			// add new marker
 			database.updateValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					queriedStreamData.id +
 					"/marker/" +
@@ -740,12 +781,17 @@ async function updateStreamData(
 
 			// get last marker key (either stream start or a category change)
 			const lastMarker = await database.getLastKey(
-				config.twitchUserID + "/" + queriedStreamData.id + "/marker"
+				"stream/" +
+					config.twitchUserID +
+					"/" +
+					queriedStreamData.id +
+					"/marker"
 			);
 
 			// get last marker's emote count (either stream start or a category change)
 			const lastEmoteCount = await database.getValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					queriedStreamData.id +
 					"/marker/" +
@@ -755,7 +801,8 @@ async function updateStreamData(
 
 			// update previous marker with total emote usage
 			database.updateValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					queriedStreamData.id +
 					"/marker/" +
@@ -767,12 +814,17 @@ async function updateStreamData(
 
 			// get first marker key (stream start marker)
 			const firstMarker = await database.getFirstKey(
-				config.twitchUserID + "/" + queriedStreamData.id + "/marker"
+				"stream/" +
+					config.twitchUserID +
+					"/" +
+					queriedStreamData.id +
+					"/marker"
 			);
 
 			// get first marker's emote count (stream start marker)
 			const firstEmoteCount = await database.getValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					queriedStreamData.id +
 					"/marker/" +
@@ -782,7 +834,7 @@ async function updateStreamData(
 
 			// update stream info
 			database.updateValue(
-				config.twitchUserID + "/" + queriedStreamData.id,
+				"stream/" + config.twitchUserID + "/" + queriedStreamData.id,
 				{
 					title: queriedStreamData.title,
 					viewers: queriedStreamData.viewer_count,
@@ -862,10 +914,12 @@ async function updateStreamData(
 			if (queriedStreamData.game_id !== localStreamData.game_id) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
-					config.twitchUserID + "/" + localStreamData.id + "/marker"
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
 				);
-
-				log.info(lastMarker)
 
 				// last marker is missing (aka no stream start), then cancel
 				if (!lastMarker) {
@@ -881,7 +935,8 @@ async function updateStreamData(
 
 				// get last marker's emote count (either stream start or a category change)
 				const lastEmoteCount = await database.getValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -894,7 +949,8 @@ async function updateStreamData(
 
 				// update previous marker
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -906,7 +962,8 @@ async function updateStreamData(
 
 				// add new marker
 				database.updateValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
@@ -937,7 +994,8 @@ async function updateStreamData(
 
 			// add new marker
 			database.updateValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					localStreamData.id +
 					"/marker/" +
@@ -954,12 +1012,17 @@ async function updateStreamData(
 
 			// get last marker key (either stream start or a category change)
 			const lastMarker = await database.getLastKey(
-				config.twitchUserID + "/" + localStreamData.id + "/marker"
+				"stream/" +
+					config.twitchUserID +
+					"/" +
+					localStreamData.id +
+					"/marker"
 			);
 
 			// get last marker's emote count (either stream start or a category change)
 			const lastEmoteCount = await database.getValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					localStreamData.id +
 					"/marker/" +
@@ -969,7 +1032,8 @@ async function updateStreamData(
 
 			// update previous marker with total emote usage
 			database.updateValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					localStreamData.id +
 					"/marker/" +
@@ -981,12 +1045,17 @@ async function updateStreamData(
 
 			// get first marker key (stream start marker)
 			const firstMarker = await database.getFirstKey(
-				config.twitchUserID + "/" + localStreamData.id + "/marker"
+				"stream/" +
+					config.twitchUserID +
+					"/" +
+					localStreamData.id +
+					"/marker"
 			);
 
 			// get first marker's emote count (stream start marker)
 			const firstEmoteCount = await database.getValue(
-				config.twitchUserID +
+				"stream/" +
+					config.twitchUserID +
 					"/" +
 					localStreamData.id +
 					"/marker/" +
@@ -996,7 +1065,7 @@ async function updateStreamData(
 
 			// update stream info
 			database.updateValue(
-				config.twitchUserID + "/" + localStreamData.id,
+				"stream/" + config.twitchUserID + "/" + localStreamData.id,
 				{
 					title: localStreamData.title,
 					viewers: localStreamData.viewer_count,
