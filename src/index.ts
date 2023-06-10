@@ -61,6 +61,14 @@ async function updateStreamData(
 	// 	await eventSub.apiClient.streams.getStreamByUserId(config.twitchUserID);
 	const queriedStreamData = await twitchAPI.getStreamData();
 
+	// DEBUG
+	log.warn(
+		"Provided Data: " + JSON.stringify(providedStreamData),
+		"Local Data: " + JSON.stringify(localStreamData),
+		"Queried Data " + JSON.stringify(queriedStreamData)
+	);
+
+
 	// compare provided stream data against local stream data
 	if (providedStreamData && localStreamData) {
 		// stream start event and local data means my routine query caught it first, or there was a restart
