@@ -213,9 +213,12 @@ async function updateStreamData(
 					// log
 					log.warn(
 						"Received Stream Start Event and have local and provided data, but wasn't able to get any data from Twitch API.",
-						"Provided Data: " + JSON.stringify(providedStreamData),
-						"Local Data: " + JSON.stringify(localStreamData),
-						"Queried Data " + JSON.stringify(queriedStreamData)
+						"Provided Data: " +
+							JSON.parse(JSON.stringify(providedStreamData)),
+						"Local Data: " +
+							JSON.parse(JSON.stringify(localStreamData)),
+						"Queried Data " +
+							JSON.parse(JSON.stringify(queriedStreamData))
 					);
 					return;
 				}
@@ -225,9 +228,12 @@ async function updateStreamData(
 				// log
 				log.warn(
 					"Received Stream Start Event, but already caught event with routine query.",
-					"Provided Data: " + JSON.stringify(providedStreamData),
-					"Local Data: " + JSON.stringify(localStreamData),
-					"Queried Data " + JSON.stringify(queriedStreamData)
+					"Provided Data: " +
+						JSON.parse(JSON.stringify(providedStreamData)),
+					"Local Data: " +
+						JSON.parse(JSON.stringify(localStreamData)),
+					"Queried Data " +
+						JSON.parse(JSON.stringify(queriedStreamData))
 				);
 				return;
 			}
@@ -247,9 +253,12 @@ async function updateStreamData(
 					// log
 					log.warn(
 						"Received Category Change Event, but have no record of a stream starting.",
-						"Provided Data: " + JSON.stringify(providedStreamData),
-						"Local Data: " + JSON.stringify(localStreamData),
-						"Queried Data " + JSON.stringify(queriedStreamData)
+						"Provided Data: " +
+							JSON.parse(JSON.stringify(providedStreamData)),
+						"Local Data: " +
+							JSON.parse(JSON.stringify(localStreamData)),
+						"Queried Data " +
+							JSON.parse(JSON.stringify(queriedStreamData))
 					);
 					return;
 				}
@@ -308,9 +317,12 @@ async function updateStreamData(
 				// log
 				log.warn(
 					"Received Category Change Event, but there does not seem to be an active stream.",
-					"Provided Data: " + JSON.stringify(providedStreamData),
-					"Local Data: " + JSON.stringify(localStreamData),
-					"Queried Data " + JSON.stringify(queriedStreamData)
+					"Provided Data: " +
+						JSON.parse(JSON.stringify(providedStreamData)),
+					"Local Data: " +
+						JSON.parse(JSON.stringify(localStreamData)),
+					"Queried Data " +
+						JSON.parse(JSON.stringify(queriedStreamData))
 				);
 				return;
 			}
@@ -704,9 +716,10 @@ async function updateStreamData(
 			// log
 			log.warn(
 				"Received Category Changed Event with no local data, and therefore no record of a stream starting.",
-				"Provided Data: " + JSON.stringify(providedStreamData),
-				"Local Data: " + JSON.stringify(localStreamData),
-				"Queried Data " + JSON.stringify(queriedStreamData)
+				"Provided Data: " +
+					JSON.parse(JSON.stringify(providedStreamData)),
+				"Local Data: " + JSON.parse(JSON.stringify(localStreamData)),
+				"Queried Data " + JSON.parse(JSON.stringify(queriedStreamData))
 			);
 			return;
 		}
@@ -813,9 +826,10 @@ async function updateStreamData(
 			// log
 			log.warn(
 				"Received End Event, but have no record of current stream.",
-				"Provided Data: " + JSON.stringify(providedStreamData),
-				"Local Data: " + JSON.stringify(localStreamData),
-				"Queried Data " + JSON.stringify(queriedStreamData)
+				"Provided Data: " +
+					JSON.parse(JSON.stringify(providedStreamData)),
+				"Local Data: " + JSON.parse(JSON.stringify(localStreamData)),
+				"Queried Data " + JSON.parse(JSON.stringify(queriedStreamData))
 			);
 			return;
 		}
@@ -863,9 +877,12 @@ async function updateStreamData(
 					// log
 					log.warn(
 						"It looks like the category has changed, but I do not have a reference to a previous category or stream start.",
-						"Provided Data: " + JSON.stringify(providedStreamData),
-						"Local Data: " + JSON.stringify(localStreamData),
-						"Queried Data " + JSON.stringify(queriedStreamData)
+						"Provided Data: " +
+							JSON.parse(JSON.stringify(providedStreamData)),
+						"Local Data: " +
+							JSON.parse(JSON.stringify(localStreamData)),
+						"Queried Data " +
+							JSON.parse(JSON.stringify(queriedStreamData))
 					);
 					return;
 				}
