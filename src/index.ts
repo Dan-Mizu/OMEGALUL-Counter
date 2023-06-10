@@ -41,7 +41,6 @@ async function updateStreamData(
 		| {
 				type: "start";
 				id: string;
-				started_at: Date;
 		  }
 		| {
 				type: "end";
@@ -144,7 +143,6 @@ async function updateStreamData(
 						config.twitchUserID + "/" + localStreamData.id,
 						{
 							title: localStreamData.title,
-							startDate: localStreamData.started_at,
 							viewers: localStreamData.viewer_count,
 							// total emote usage
 							emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -179,7 +177,6 @@ async function updateStreamData(
 							game_name: queriedStreamData.gameName,
 							title: queriedStreamData.title,
 							viewer_count: queriedStreamData.viewers,
-							started_at: queriedStreamData.startDate,
 						},
 					});
 
@@ -191,7 +188,6 @@ async function updateStreamData(
 							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
-							startDate: queriedStreamData.startDate,
 							viewers: queriedStreamData.viewers,
 							marker: {
 								[Date.now()]: {
@@ -399,7 +395,6 @@ async function updateStreamData(
 						config.twitchUserID + "/" + localStreamData.id,
 						{
 							title: queriedStreamData.title,
-							startDate: localStreamData.started_at,
 							viewers: localStreamData.viewer_count,
 							// total emote usage
 							emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -502,7 +497,6 @@ async function updateStreamData(
 						config.twitchUserID + "/" + localStreamData.id,
 						{
 							title: localStreamData.title,
-							startDate: localStreamData.started_at,
 							viewers: localStreamData.viewer_count,
 							// total emote usage
 							emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -537,7 +531,6 @@ async function updateStreamData(
 							game_name: queriedStreamData.gameName,
 							title: queriedStreamData.title,
 							viewer_count: queriedStreamData.viewers,
-							started_at: queriedStreamData.startDate,
 						},
 					});
 
@@ -549,7 +542,6 @@ async function updateStreamData(
 							queriedStreamData.id,
 						{
 							title: queriedStreamData.title,
-							startDate: queriedStreamData.startDate,
 							viewers: queriedStreamData.viewers,
 							marker: {
 								[Date.now()]: {
@@ -641,7 +633,6 @@ async function updateStreamData(
 					config.twitchUserID + "/" + localStreamData.id,
 					{
 						title: localStreamData.title,
-						startDate: localStreamData.startDate,
 						viewers: localStreamData.viewers,
 						// total emote usage
 						emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -680,7 +671,6 @@ async function updateStreamData(
 				game_name: queriedStreamData.gameName,
 				title: queriedStreamData.title,
 				viewer_count: queriedStreamData.viewers,
-				started_at: providedStreamData.started_at,
 			});
 
 			// store stream info and marker
@@ -688,7 +678,6 @@ async function updateStreamData(
 				"stream/" + config.twitchUserID + "/" + providedStreamData.id,
 				{
 					title: queriedStreamData.title,
-					startDate: providedStreamData.started_at,
 					viewers: queriedStreamData.viewers,
 					marker: {
 						[Date.now()]: {
@@ -790,7 +779,6 @@ async function updateStreamData(
 				config.twitchUserID + "/" + queriedStreamData.id,
 				{
 					title: queriedStreamData.title,
-					startDate: queriedStreamData.startDate,
 					viewers: queriedStreamData.viewers,
 					// total emote usage
 					emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -855,7 +843,6 @@ async function updateStreamData(
 					queriedStreamData.viewers > localStreamData.viewer_count
 						? queriedStreamData.viewers
 						: localStreamData.viewer_count,
-				started_at: localStreamData.startDate,
 			};
 
 			// store updated local stream data
@@ -1003,7 +990,6 @@ async function updateStreamData(
 				config.twitchUserID + "/" + localStreamData.id,
 				{
 					title: localStreamData.title,
-					startDate: localStreamData.started_at,
 					viewers: localStreamData.viewer_count,
 					// total emote usage
 					emoteUsage: currentEmoteCount - firstEmoteCount,
@@ -1039,7 +1025,6 @@ async function updateStreamData(
 			game_name: queriedStreamData.gameName,
 			title: queriedStreamData.title,
 			viewer_count: queriedStreamData.viewers,
-			started_at: queriedStreamData.startDate,
 		});
 
 		// store stream info and marker
@@ -1047,7 +1032,6 @@ async function updateStreamData(
 			"stream/" + config.twitchUserID + "/" + queriedStreamData.id,
 			{
 				title: queriedStreamData.title,
-				startDate: queriedStreamData.startDate,
 				viewers: queriedStreamData.viewers,
 				marker: {
 					[Date.now()]: {
@@ -1084,7 +1068,6 @@ const eventStreamOnline = listener.onStreamOnline(
 		updateStreamData({
 			type: "start",
 			id: event.id,
-			started_at: event.startDate,
 		})
 );
 const eventStreamOffline = listener.onStreamOffline(
