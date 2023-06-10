@@ -57,8 +57,9 @@ async function updateStreamData(
 	);
 
 	// query stream data from twitch api
-	const queriedStreamData =
-		await eventSub.apiClient.streams.getStreamByUserId(config.twitchUserID);
+	// const queriedStreamData =
+	// 	await eventSub.apiClient.streams.getStreamByUserId(config.twitchUserID);
+	const queriedStreamData = await twitchAPI.getStreamData();
 
 	// compare provided stream data against local stream data
 	if (providedStreamData && localStreamData) {
