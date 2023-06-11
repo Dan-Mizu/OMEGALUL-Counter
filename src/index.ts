@@ -910,8 +910,157 @@ async function updateStreamData(
 				allLocalStreamData
 			);
 
+			// new stream ID? (end old stream and start new stream)
+			if (queriedStreamData.id !== localStreamData.id) {
+				// END STREAM
+
+				// get current emote count
+				const currentEmoteCount = await getCurrentEmoteCount();
+
+				// add new marker
+				database.updateValue(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker/" +
+						Date.now(),
+					{
+						type: "end",
+						category: {
+							id: localStreamData.game_id,
+							name: localStreamData.game_name,
+						},
+						emoteCount: currentEmoteCount,
+					}
+				);
+
+				// get last marker key (either stream start or a category change)
+				const lastMarker = await database.getLastKey(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
+				);
+
+				// get last marker's emote count (either stream start or a category change)
+				const lastEmoteCount = await database.getValue(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker/" +
+						lastMarker +
+						"/emoteCount"
+				);
+
+				// update previous marker with total emote usage
+				database.updateValue(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker/" +
+						lastMarker,
+					{
+						emoteUsage: currentEmoteCount - lastEmoteCount,
+					}
+				);
+
+				// get first marker key (stream start marker)
+				const firstMarker = await database.getFirstKey(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
+				);
+
+				// get first marker's emote count (stream start marker)
+				const firstEmoteCount = await database.getValue(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker/" +
+						firstMarker +
+						"/emoteCount"
+				);
+
+				// update stream info
+				database.updateValue(
+					"stream/" + config.twitchUserID + "/" + localStreamData.id,
+					{
+						title: localStreamData.title,
+						viewers: localStreamData.viewer_count,
+						// total emote usage
+						emoteUsage: currentEmoteCount - firstEmoteCount,
+						// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
+						emotePerHour:
+							(currentEmoteCount - firstEmoteCount) /
+							((Date.now() - firstMarker) / (60 * 60 * 1000)),
+					}
+				);
+
+				// clear local stream data
+				database.deletePath("temp/stream/" + config.twitchUserID);
+
+				// log
+				log.message(
+					"[" + localStreamData.id + "]",
+					'Stream "' + localStreamData.title + '" ended',
+					"Total Counted Emotes:",
+					currentEmoteCount - firstEmoteCount,
+					"Uptime:",
+					(Date.now() - firstMarker) / (60 * 60 * 1000),
+					"hours"
+				);
+
+				// START STREAM
+
+				// format and store local stream data
+				database.setValue("temp/stream/" + config.twitchUserID, {
+					[config.twitchUserID]: {
+						id: queriedStreamData.id,
+						game_id: queriedStreamData.game_id,
+						game_name: queriedStreamData.game_name,
+						title: queriedStreamData.title,
+						viewer_count: queriedStreamData.viewer_count,
+					},
+				});
+
+				// store stream info and marker
+				database.setValue(
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						queriedStreamData.id,
+					{
+						title: queriedStreamData.title,
+						viewers: queriedStreamData.viewer_count,
+						marker: {
+							[Date.now()]: {
+								type: "start",
+								category: {
+									id: queriedStreamData.game_id,
+									name: queriedStreamData.game_name,
+								},
+								emoteCount: currentEmoteCount,
+							},
+						},
+					}
+				);
+
+				// log
+				log.message(
+					"[" + queriedStreamData.id + "]",
+					'Stream "' + queriedStreamData.title + '" started.'
+				);
+			}
+
 			// new category? update database with new category marker
-			if (queriedStreamData.game_id !== localStreamData.game_id) {
+			else if (queriedStreamData.game_id !== localStreamData.game_id) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
 					"stream/" +
