@@ -141,7 +141,8 @@ async function updateStreamData(
 
 					// get first marker's emote count (stream start marker)
 					const firstEmoteCount = await database.getValue(
-						config.twitchUserID +
+						"stream/" +
+							config.twitchUserID +
 							"/" +
 							localStreamData.id +
 							"/marker/" +
@@ -251,7 +252,11 @@ async function updateStreamData(
 			if (queriedStreamData) {
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
-					config.twitchUserID + "/" + localStreamData.id + "/marker"
+					"stream/" +
+						config.twitchUserID +
+						"/" +
+						localStreamData.id +
+						"/marker"
 				);
 
 				// last marker is missing (aka no stream start), then cancel
@@ -268,7 +273,8 @@ async function updateStreamData(
 
 				// get last marker's emote count (either stream start or a category change)
 				const lastEmoteCount = await database.getValue(
-					config.twitchUserID +
+					"stream/" +
+						config.twitchUserID +
 						"/" +
 						localStreamData.id +
 						"/marker/" +
