@@ -185,13 +185,11 @@ async function updateStreamData(
 
 					// format and store local stream data
 					database.setValue("temp/stream/" + config.twitchUserID, {
-						[config.twitchUserID]: {
-							id: queriedStreamData.id,
-							game_id: queriedStreamData.game_id,
-							game_name: queriedStreamData.game_name,
-							title: queriedStreamData.title,
-							viewer_count: queriedStreamData.viewer_count,
-						},
+						id: queriedStreamData.id,
+						game_id: queriedStreamData.game_id,
+						game_name: queriedStreamData.game_name,
+						title: queriedStreamData.title,
+						viewer_count: queriedStreamData.viewer_count,
 					});
 
 					// store stream info and marker
@@ -559,13 +557,11 @@ async function updateStreamData(
 
 					// format and store local stream data
 					database.setValue("temp/stream/" + config.twitchUserID, {
-						[config.twitchUserID]: {
-							id: queriedStreamData.id,
-							game_id: queriedStreamData.game_id,
-							game_name: queriedStreamData.game_name,
-							title: queriedStreamData.title,
-							viewer_count: queriedStreamData.viewer_count,
-						},
+						id: queriedStreamData.id,
+						game_id: queriedStreamData.game_id,
+						game_name: queriedStreamData.game_name,
+						title: queriedStreamData.title,
+						viewer_count: queriedStreamData.viewer_count,
 					});
 
 					// store stream info and marker
@@ -1021,13 +1017,11 @@ async function updateStreamData(
 
 				// format and store local stream data
 				database.setValue("temp/stream/" + config.twitchUserID, {
-					[config.twitchUserID]: {
-						id: queriedStreamData.id,
-						game_id: queriedStreamData.game_id,
-						game_name: queriedStreamData.game_name,
-						title: queriedStreamData.title,
-						viewer_count: queriedStreamData.viewer_count,
-					},
+					id: queriedStreamData.id,
+					game_id: queriedStreamData.game_id,
+					game_name: queriedStreamData.game_name,
+					title: queriedStreamData.title,
+					viewer_count: queriedStreamData.viewer_count,
 				});
 
 				// store stream info and marker
