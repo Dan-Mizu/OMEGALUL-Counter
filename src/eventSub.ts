@@ -32,7 +32,9 @@ export default {
 		if (this.secret != null) return this.secret;
 
 		// get secret from temp file
-		this.secret = (await database.getValue("temp/eventSubSecret")) as string;
+		this.secret = (await database.getValue(
+			"temp/eventSubSecret"
+		)) as string;
 
 		// secret stored in temp file
 		if (this.secret != null) return this.secret;
@@ -59,11 +61,11 @@ export default {
 		// get secret
 		const secret = await this.getSecret();
 
+		// necessary to prevent conflict errors resulting from assigning a new host name every time
+		await apiClient.eventSub.deleteAllSubscriptions();
+
 		// dev mode (use ngrok)
 		if (process.env.NODE_ENV === "development") {
-			// necessary to prevent conflict errors resulting from ngrok assigning a new host name every time
-			await apiClient.eventSub.deleteAllSubscriptions();
-
 			// create listener
 			listener = new EventSubHttpListener({
 				apiClient,
