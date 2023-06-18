@@ -107,6 +107,26 @@ interface TwitchStream {
 	/** A Boolean value that indicates whether the stream is meant for mature audiences. */
 	is_mature: boolean;
 }
+interface KattahUser {
+	id: number;
+	twitch_username: string;
+	stv_id: string;
+	tracking_since: string;
+	tracking: boolean;
+}
+interface KattahEmote {
+	emote: string;
+	emote_id: string;
+	count: number;
+	added: string;
+}
+interface KattahChannel {
+	success: boolean;
+	user: KattahUser;
+	emotes: {
+		[key: number]: KattahEmote;
+	};
+}
 interface AccessToken {
 	token: string;
 	expires_at: number;
@@ -274,15 +294,17 @@ async function get7TVEmoteCount(userID: string | number): Promise<number> {
 
 	// attempt to get emote count from kattah api
 	try {
-		const response: AxiosResponse = await kattahAPI.get(
-			await getTwitchUsernameFromID(String(userID))
-		);
+		const channel: KattahChannel = (
+			await kattahAPI.get(await getTwitchUsernameFromID(String(userID)))
+		).data;
 
 		// save emote count (from specified emote in config)
-		emoteCount = utility.JSON.getObjectsFromKeyValue(
-			response.data.emotes,
-			"emote",
-			config.desiredEmote
+		emoteCount = (
+			utility.JSON.getObjectsFromKeyValue(
+				channel.emotes,
+				"emote",
+				config.desiredEmote
+			) as KattahEmote[]
 		)[0].count;
 	} catch (error) {
 		// issue getting emote count
