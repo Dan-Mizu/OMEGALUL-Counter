@@ -26,7 +26,7 @@ const twurpleAuthProvider = new AppTokenAuthProvider(
 const twurpleApiClient = new ApiClient({ authProvider: twurpleAuthProvider });
 
 // types
-interface TwitchUser {
+export interface TwitchUser {
 	/** An ID that identifies the user. */
 	id: string;
 	/** The user’s login name. */
@@ -66,7 +66,7 @@ interface TwitchUser {
 	/** The UTC date and time that the user’s account was created. The timestamp is in RFC3339 format. */
 	created_at: string;
 }
-interface TwitchStream {
+export interface TwitchStream {
 	/** An ID that identifies the stream. You can use this ID later to look up the video on demand (VOD). */
 	id: string;
 	/** The ID of the user that’s broadcasting the stream. */
@@ -86,7 +86,7 @@ interface TwitchStream {
 	 * If an error occurs, this field is set to an empty string.
 	 */
 	type: string;
-	/**  The stream’s title. Is an empty string if not set. */
+	/** The stream’s title. Is an empty string if not set. */
 	title: string;
 	/** The tags applied to the stream. */
 	tags: string[];
@@ -107,20 +107,20 @@ interface TwitchStream {
 	/** A Boolean value that indicates whether the stream is meant for mature audiences. */
 	is_mature: boolean;
 }
-interface KattahUser {
+export interface KattahUser {
 	id: number;
 	twitch_username: string;
 	stv_id: string;
 	tracking_since: string;
 	tracking: boolean;
 }
-interface KattahEmote {
+export interface KattahEmote {
 	emote: string;
 	emote_id: string;
 	count: number;
 	added: string;
 }
-interface KattahChannel {
+export interface KattahChannel {
 	success: boolean;
 	user: KattahUser;
 	emotes: {
