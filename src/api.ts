@@ -210,7 +210,7 @@ async function getTwitchUserData(userID: string | number): Promise<TwitchUser> {
 			params: { id: String(userID) },
 			headers: {
 				"Client-Id": config.twitch.client_id,
-				Authorization: "Bearer " + (await this.getTwitchAccessToken()),
+				Authorization: "Bearer " + (await getTwitchAccessToken()),
 			},
 		});
 
@@ -354,7 +354,7 @@ async function getTwurpleEventListener(): Promise<EventSubHttpListener> {
 			listener = new EventSubHttpListener({
 				apiClient: twurpleApiClient,
 				adapter: new DirectConnectionAdapter(config.webhookConfig),
-				secret: await this.getSecret(),
+				secret,
 				legacySecrets: false,
 			});
 		}
@@ -365,7 +365,7 @@ async function getTwurpleEventListener(): Promise<EventSubHttpListener> {
 			listener = new EventSubHttpListener({
 				apiClient: twurpleApiClient,
 				adapter: new ReverseProxyAdapter(config.reverseProxyConfig),
-				secret: await this.getSecret(),
+				secret,
 				legacySecrets: false,
 			});
 		}
