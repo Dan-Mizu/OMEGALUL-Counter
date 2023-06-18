@@ -1,13 +1,10 @@
 // imports
-import { AxiosResponse } from "axios";
 import {
 	EventSubStreamOnlineEvent,
 	EventSubChannelUpdateEvent,
 	EventSubStreamOfflineEvent,
 } from "@twurple/eventsub-base";
 import api from "./api.js";
-import eventSub from "./eventSub.js";
-import utility from "./utility/utility.js";
 import log from "./utility/log.js";
 import database from "./utility/database.js";
 
@@ -1271,11 +1268,8 @@ async function updateStreamData(
 		return;
 }
 
-// get listener
-const listener = await eventSub.init();
-
 // events
-const eventStreamOnline = listener.onStreamOnline(
+const eventStreamOnline = (await api.getEventListener()).onStreamOnline(
 	config.twitchUserID,
 	(event: EventSubStreamOnlineEvent) =>
 		updateStreamData({
@@ -1283,14 +1277,14 @@ const eventStreamOnline = listener.onStreamOnline(
 			id: event.id,
 		})
 );
-const eventStreamOffline = listener.onStreamOffline(
+const eventStreamOffline = (await api.getEventListener()).onStreamOffline(
 	config.twitchUserID,
 	() => (_event: EventSubStreamOfflineEvent) =>
 		updateStreamData({
 			type: "end",
 		})
 );
-const eventStreamChange = listener.onChannelUpdate(
+const eventStreamChange = (await api.getEventListener()).onChannelUpdate(
 	config.twitchUserID,
 	(event: EventSubChannelUpdateEvent) =>
 		updateStreamData({

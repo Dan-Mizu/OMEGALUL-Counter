@@ -1,11 +1,29 @@
 // imports
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import crypto from "crypto";
+import { AppTokenAuthProvider } from "@twurple/auth";
+import { ApiClient } from "@twurple/api";
+import {
+	DirectConnectionAdapter,
+	EventSubHttpListener,
+	ReverseProxyAdapter,
+} from "@twurple/eventsub-http";
+import { NgrokAdapter } from "@twurple/eventsub-ngrok";
 import log from "./utility/log.js";
 import database from "./utility/database.js";
+import utility from "./utility/utility.js";
 
 // config
 import config from "../config/config.json" assert { type: "json" };
-import utility from "./utility/utility.js";
+
+// init auth provider (twurple)
+const twurpleAuthProvider = new AppTokenAuthProvider(
+	config.twitch.client_id,
+	config.twitch.client_secret
+);
+
+// init api client (twurple)
+const twurpleApiClient = new ApiClient({ authProvider: twurpleAuthProvider });
 
 // types
 interface TwitchUser {
@@ -108,6 +126,9 @@ let kattahAPI: AxiosInstance = axios.create({
 let streamElementsAPI: AxiosInstance = axios.create({
 	baseURL: "https://api.streamelements.com/kappa/v2/chatstats/",
 });
+
+// twurple event listener
+let listener: EventSubHttpListener;
 
 // lists
 let secrets: Record<string, SecretData | undefined> = {
@@ -272,7 +293,93 @@ async function get7TVEmoteCount(userID: string | number): Promise<number> {
 	return emoteCount ? emoteCount : null;
 }
 
+// get secret for twurple event sub from database or create new one
+async function getTwurpleSecret(): Promise<string> {
+	// declare twurple event secret refresh method
+	let refreshTwurpleSecret = async (): Promise<void> => {
+		// generate new secret (and save locally)
+		secrets.twitch.event_secret = crypto
+			.randomBytes(32)
+			.toString("base64")
+			.replace(/\+/g, "-")
+			.replace(/\//g, "_")
+			.replace(/=/g, "");
+
+		// save new secret externally (database)
+		database.setValue(
+			"secrets/twitch/event_secret",
+			secrets.twitch.event_secret
+		);
+	};
+
+	// twurple event secret does not exist locally
+	if (secrets.twitch.event_secret == null) {
+		// check for twurple event secret in external database
+		secrets.twitch.event_secret = (await database.getValue(
+			"secrets/twitch/event_secret"
+		)) as string;
+
+		// token does not exist externally either -> refresh token
+		if (secrets.twitch.event_secret == null) await refreshTwurpleSecret();
+	}
+
+	// return token
+	return secrets.twitch.event_secret;
+}
+
+// get listener for twurple event sub
+async function getTwurpleEventListener(): Promise<EventSubHttpListener> {
+	// init listener if not already
+	if (listener == null) {
+		// get secret
+		const secret = await getTwurpleSecret();
+
+		// necessary to prevent conflict errors resulting from assigning a new host name every time
+		await twurpleApiClient.eventSub.deleteAllSubscriptions();
+
+		// dev mode (use ngrok)
+		if (process.env.NODE_ENV === "development") {
+			// create listener
+			listener = new EventSubHttpListener({
+				apiClient: twurpleApiClient,
+				adapter: new NgrokAdapter(),
+				secret,
+				legacySecrets: false,
+			});
+		}
+
+		// production (outward facing http)
+		else if (!config.useProxy) {
+			// create listener
+			listener = new EventSubHttpListener({
+				apiClient: twurpleApiClient,
+				adapter: new DirectConnectionAdapter(config.webhookConfig),
+				secret: await this.getSecret(),
+				legacySecrets: false,
+			});
+		}
+
+		// production (using proxy)
+		else {
+			// create listener
+			listener = new EventSubHttpListener({
+				apiClient: twurpleApiClient,
+				adapter: new ReverseProxyAdapter(config.reverseProxyConfig),
+				secret: await this.getSecret(),
+				legacySecrets: false,
+			});
+		}
+
+		// start listener
+		listener.start();
+	}
+
+	// return event sub listener
+	return listener;
+}
+
 export default {
 	getStreamData: getTwitchStreamData,
 	getEmoteCount: get7TVEmoteCount,
+	getEventListener: getTwurpleEventListener,
 };
