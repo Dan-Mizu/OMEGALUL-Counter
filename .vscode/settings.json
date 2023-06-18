@@ -4,9 +4,11 @@
         "awaitfs",
         "eventsub",
         "firestore",
+        "kattah",
         "Mizu",
         "omegalul",
         "twurple",
-        "webp"
+        "webp",
+        "welp"
     ]
 }

@@ -146,13 +146,15 @@ export default {
 	// delete entire path in database
 	deletePath: async function (
 		path: string,
-		databaseType: string = "firestore"
+		databaseType: string = "realtime"
 	): Promise<void> {
 		// database write disabled
 		if (!config.writeToDatabase) return;
 
 		// realtime database
 		if (databaseType === "realtime") {
+			// get value
+			realtimeDatabase.ref(path).remove();
 		}
 		// firestore database
 		else if (databaseType === "firestore") {
