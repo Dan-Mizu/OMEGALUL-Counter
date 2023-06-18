@@ -69,7 +69,7 @@ async function streamChanged(
 	failure: (message: string) => void
 ): Promise<void> {
 	// get last marker key (either stream start or a category change)
-	const lastMarker = await database.getLastKey(
+	const lastMarker: string = await database.getLastKey(
 		"stream/" + config.twitchUserID + "/" + streamData.id + "/marker"
 	);
 
@@ -81,8 +81,25 @@ async function streamChanged(
 		return;
 	}
 
+	// check if category actually changed from last marker
+	const lastMarkerCategoryID: string = await database.getValue(
+		"stream/" +
+			config.twitchUserID +
+			"/" +
+			streamData.id +
+			"/marker" +
+			lastMarker +
+			"category/id"
+	);
+	if (streamData.game_id === lastMarkerCategoryID) {
+		failure(
+			"Received Category Change Event, but the last marker is the same category!"
+		);
+		return;
+	}
+
 	// get last marker's emote count (either stream start or a category change)
-	const lastEmoteCount = await database.getValue(
+	const lastEmoteCount: number = await database.getValue(
 		"stream/" +
 			config.twitchUserID +
 			"/" +
@@ -140,7 +157,7 @@ async function streamEnded(
 	failure: (message: string) => void
 ) {
 	// get last marker key (either stream start or a category change)
-	const lastMarker = await database.getLastKey(
+	const lastMarker: string = await database.getLastKey(
 		"stream/" + config.twitchUserID + "/" + streamData.id + "/marker"
 	);
 
@@ -198,12 +215,12 @@ async function streamEnded(
 	);
 
 	// get first marker key (stream start marker)
-	const firstMarker = await database.getFirstKey(
+	const firstMarker: string = await database.getFirstKey(
 		"stream/" + config.twitchUserID + "/" + streamData.id + "/marker"
 	);
 
 	// get first marker's emote count (stream start marker)
-	const firstEmoteCount = await database.getValue(
+	const firstEmoteCount: number = await database.getValue(
 		"stream/" +
 			config.twitchUserID +
 			"/" +
@@ -224,7 +241,7 @@ async function streamEnded(
 			// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
 			emotePerHour:
 				(currentEmoteCount - firstEmoteCount) /
-				((Date.now() - firstMarker) / (60 * 60 * 1000)),
+				((Date.now() - Number(firstMarker)) / (60 * 60 * 1000)),
 		}
 	);
 
@@ -238,7 +255,7 @@ async function streamEnded(
 		"Total Counted Emotes:",
 		currentEmoteCount - firstEmoteCount,
 		"Uptime:",
-		(Date.now() - firstMarker) / (60 * 60 * 1000),
+		(Date.now() - Number(firstMarker)) / (60 * 60 * 1000),
 		"hours"
 	);
 }
