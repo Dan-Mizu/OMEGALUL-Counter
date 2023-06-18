@@ -252,7 +252,7 @@ async function getTwitchUsernameFromID(
 	if (twitchUsers[userID] == null || twitchUsers[userID].username == null)
 		twitchUsers[userID].username = (
 			await getTwitchUserData(String(userID))
-		).login;
+		).display_name;
 
 	// return new username
 	return twitchUsers[userID].username;
