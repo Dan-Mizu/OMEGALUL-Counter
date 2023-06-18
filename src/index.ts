@@ -35,7 +35,7 @@ async function updateStreamData(
 	// query stream data from twitch api
 	const queriedStreamData = await api.getStreamData(config.twitchUserID);
 
-	// // DEBUG
+	// DEBUG
 	// log.warn(
 	// 	"Provided Data: " + JSON.stringify(providedStreamData),
 	// 	"Local Data: " + JSON.stringify(localStreamData),
@@ -1295,9 +1295,9 @@ const eventStreamChange = (await api.getEventListener()).onChannelUpdate(
 );
 
 // DEBUG
-log.debug(await eventStreamOnline.getCliTestCommand());
-log.debug(await eventStreamOffline.getCliTestCommand());
-log.debug(await eventStreamChange.getCliTestCommand());
+// log.debug(await eventStreamOnline.getCliTestCommand());
+// log.debug(await eventStreamOffline.getCliTestCommand());
+// log.debug(await eventStreamChange.getCliTestCommand());
 
 // Notify start
 log.info("Emote Counter initialized.");
