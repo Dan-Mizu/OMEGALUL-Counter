@@ -14,27 +14,6 @@ import database from "./utility/database.js";
 // get data
 import config from "../config/config.json" assert { type: "json" };
 
-// init api
-const twitchAPI = new api(config.twitchUserID);
-
-// get current emote usage
-async function getCurrentEmoteCount(): Promise<number> {
-	let emoteUsage: number;
-	try {
-		await twitchAPI.getEmoteUsage((response: AxiosResponse) => {
-			emoteUsage = utility.JSON.getObjectsFromKeyValue(
-				response.data.emotes,
-				"emote",
-				config.desiredEmote
-			)[0].count;
-		});
-	} catch (error) {
-		log.message(error);
-		return null;
-	}
-	return emoteUsage;
-}
-
 // update stream data
 async function updateStreamData(
 	providedStreamData?:
@@ -57,7 +36,7 @@ async function updateStreamData(
 	);
 
 	// query stream data from twitch api
-	const queriedStreamData = await twitchAPI.getStreamData();
+	const queriedStreamData = await api.getStreamData(config.twitchUserID);
 
 	// // DEBUG
 	// log.warn(
@@ -77,7 +56,9 @@ async function updateStreamData(
 					// END STREAM
 
 					// get current emote count
-					const currentEmoteCount = await getCurrentEmoteCount();
+					const currentEmoteCount = await api.getEmoteCount(
+						config.twitchUserID
+					);
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
@@ -283,7 +264,9 @@ async function updateStreamData(
 				);
 
 				// get current emote count
-				const currentEmoteCount = await getCurrentEmoteCount();
+				const currentEmoteCount = await api.getEmoteCount(
+					config.twitchUserID
+				);
 
 				// update previous marker
 				database.updateValue(
@@ -343,7 +326,9 @@ async function updateStreamData(
 				// local and queried stream data match (end stream)
 				if (localStreamData.id === queriedStreamData.id) {
 					// get current emote count
-					const currentEmoteCount = await getCurrentEmoteCount();
+					const currentEmoteCount = await api.getEmoteCount(
+						config.twitchUserID
+					);
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
@@ -454,7 +439,9 @@ async function updateStreamData(
 					// END STREAM
 
 					// get current emote count
-					const currentEmoteCount = await getCurrentEmoteCount();
+					const currentEmoteCount = await api.getEmoteCount(
+						config.twitchUserID
+					);
 
 					// get last marker key (either stream start or a category change)
 					const lastMarker = await database.getLastKey(
@@ -603,7 +590,9 @@ async function updateStreamData(
 			// no queried data found, go with local state (end stream)
 			else {
 				// get current emote count
-				const currentEmoteCount = await getCurrentEmoteCount();
+				const currentEmoteCount = await api.getEmoteCount(
+					config.twitchUserID
+				);
 
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
@@ -734,7 +723,9 @@ async function updateStreamData(
 								id: queriedStreamData.game_id,
 								name: queriedStreamData.game_name,
 							},
-							emoteCount: await getCurrentEmoteCount(),
+							emoteCount: await api.getEmoteCount(
+								config.twitchUserID
+							),
 						},
 					},
 				}
@@ -761,7 +752,9 @@ async function updateStreamData(
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
 		else if (providedStreamData.type === "end" && queriedStreamData) {
 			// get current emote count
-			const currentEmoteCount = await getCurrentEmoteCount();
+			const currentEmoteCount = await api.getEmoteCount(
+				config.twitchUserID
+			);
 
 			// get last marker key (either stream start or a category change)
 			const lastMarker = await database.getLastKey(
@@ -917,7 +910,9 @@ async function updateStreamData(
 				// END STREAM
 
 				// get current emote count
-				const currentEmoteCount = await getCurrentEmoteCount();
+				const currentEmoteCount = await api.getEmoteCount(
+					config.twitchUserID
+				);
 
 				// get last marker key (either stream start or a category change)
 				const lastMarker = await database.getLastKey(
@@ -1079,7 +1074,9 @@ async function updateStreamData(
 				);
 
 				// get current emote count
-				const currentEmoteCount = await getCurrentEmoteCount();
+				const currentEmoteCount = await api.getEmoteCount(
+					config.twitchUserID
+				);
 
 				// update previous marker
 				database.updateValue(
@@ -1124,7 +1121,9 @@ async function updateStreamData(
 		// no queried stream data found (end stream)
 		else {
 			// get current emote count
-			const currentEmoteCount = await getCurrentEmoteCount();
+			const currentEmoteCount = await api.getEmoteCount(
+				config.twitchUserID
+			);
 
 			// get last marker key (either stream start or a category change)
 			const lastMarker = await database.getLastKey(
@@ -1252,7 +1251,9 @@ async function updateStreamData(
 							id: queriedStreamData.game_id,
 							name: queriedStreamData.game_name,
 						},
-						emoteCount: await getCurrentEmoteCount(),
+						emoteCount: await api.getEmoteCount(
+							config.twitchUserID
+						),
 					},
 				},
 			}

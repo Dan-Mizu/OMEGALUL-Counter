@@ -1,116 +1,125 @@
 // imports
-import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import log from "./utility/log.js";
 import database from "./utility/database.js";
 
-// get data
+// config
 import config from "../config/config.json" assert { type: "json" };
+import utility from "./utility/utility.js";
 
 // types
-interface AccessTokenData {
+interface TwitchUser {
+	/** An ID that identifies the user. */
+	id: string;
+	/** The user’s login name. */
+	login: string;
+	/** The user’s display name. */
+	display_name: string;
+	/** The type of user. Possible values are:
+	 * - admin — Twitch administrator
+	 * - global_mod
+	 * - staff — Twitch staff
+	 * - "" — Normal user
+	 */
+	type: string;
+	/** The type of broadcaster. Possible values are:
+	 * - affiliate — An affiliate broadcaster
+	 * - partner — A partner broadcaster
+	 * - "" — A normal broadcaster
+	 */
+	broadcaster_type: string;
+	/** The user’s description of their channel. */
+	description: string;
+	/** A URL to the user’s profile image. */
+	profile_image_url: string;
+	/** A URL to the user’s offline image. */
+	offline_image_url: string;
+	/** The number of times the user’s channel has been viewed.
+	 *
+	 * **NOTE**: This field has been deprecated (see [Get Users API endpoint – “view_count” deprecation](https://discuss.dev.twitch.tv/t/get-users-api-endpoint-view-count-deprecation/37777)). Any data in this field is not valid and should not be used.
+	 */
+	view_count: number;
+	/**
+	 * The user’s verified email address. The object includes this field only if the user access token includes the **user:read:email** scope.
+	 *
+	 *	If the request contains more than one user, only the user associated with the access token that provided consent will include an email address — the email address for all other users will be empty.
+	 */
+	email: string;
+	/** The UTC date and time that the user’s account was created. The timestamp is in RFC3339 format. */
+	created_at: string;
+}
+interface TwitchStream {
+	/** An ID that identifies the stream. You can use this ID later to look up the video on demand (VOD). */
+	id: string;
+	/** The ID of the user that’s broadcasting the stream. */
+	user_id: string;
+	/** The user’s login name. */
+	user_login: string;
+	/** The user’s display name. */
+	user_name: string;
+	/** The ID of the category or game being played. */
+	game_id: string;
+	/** The name of the category or game being played. */
+	game_name: string;
+	/**
+	 * The type of stream. Possible values are:
+	 * - live
+	 *
+	 * If an error occurs, this field is set to an empty string.
+	 */
+	type: string;
+	/**  The stream’s title. Is an empty string if not set. */
+	title: string;
+	/** The tags applied to the stream. */
+	tags: string[];
+	/** The number of users watching the stream. */
+	viewer_count: number;
+	/** The UTC date and time (in RFC3339 format) of when the broadcast began. */
+	started_at: string;
+	/** The language that the stream uses. This is an ISO 639-1 two-letter language code or other if the stream uses a language not in the list of [supported stream languages].(https://help.twitch.tv/s/article/languages-on-twitch#streamlang) */
+	language: string;
+	/** A URL to an image of a frame from the last 5 minutes of the stream. Replace the width and height placeholders in the URL (`{width}x{height}`) with the size of the image you want, in pixels. */
+	thumbnail_url: string;
+	/**
+	 * **IMPORTANT** As of February 28, 2023, this field is deprecated and returns only an empty array. If you use this field, please update your code to use the `tags` field.
+	 *
+	 * The list of tags that apply to the stream. The list contains IDs only when the channel is steaming live. For a list of possible tags, see [List of All Tags](https://www.twitch.tv/directory/all/tags). The list doesn’t include Category Tags.
+	 */
+	tag_ids: string[];
+	/** A Boolean value that indicates whether the stream is meant for mature audiences. */
+	is_mature: boolean;
+}
+interface AccessToken {
 	token: string;
 	expires_at: number;
 }
+interface SecretData {
+	access_token?: AccessToken;
+	event_secret?: string;
+}
 
-export default class api {
-	readonly userID: string;
-	private twitchAccessToken: string;
-	private twitchAccessTokenExpiration: number;
-	private username: string;
+// api declarations
+let twitchAPI: AxiosInstance = axios.create({
+	baseURL: "https://api.twitch.tv/helix/",
+});
+let kattahAPI: AxiosInstance = axios.create({
+	baseURL: "https://api.kattah.me/c/",
+});
+let streamElementsAPI: AxiosInstance = axios.create({
+	baseURL: "https://api.streamelements.com/kappa/v2/chatstats/",
+});
 
-	twitchAPI: AxiosInstance;
-	stvAPI: AxiosInstance;
-	emoteUsageAPI: AxiosInstance;
+// lists
+let secrets: Record<string, SecretData | undefined> = {
+	twitch: {},
+};
+let twitchUsers: { [key: string]: { username: string } } = {};
 
-	constructor(userID: string) {
-		// save user ID
-		this.userID = userID;
-
-		// create axios instances
-		this.twitchAPI = axios.create({
-			baseURL: "https://api.twitch.tv/helix/",
-		});
-		this.stvAPI = axios.create({
-			baseURL: "https://7tv.io/v3/",
-		});
-		this.emoteUsageAPI = axios.create({
-			baseURL: "https://api.kattah.me/c/",
-		});
-	}
-
-	async getUsername(): Promise<string> {
-		// username exists
-		if (this.username) return this.username;
-
-		// get username from twitch
-		await this.getTwitchUserData(
-			{ id: this.userID },
-			(response: AxiosResponse) => {
-				this.username = response.data.data[0].display_name;
-			}
-		);
-
-		// return new username
-		return this.username;
-	}
-
-	async getStreamData(): Promise<any> {
-		// init stream data
-		let data: any;
-
-		// get stream data from twitch
-		await this.getTwitchStreamData(
-			{ user_id: this.userID },
-			(response: AxiosResponse) => {
-				data = response.data.data[0];
-			}
-		);
-
-		// return data
-		return data ? data : null;
-	}
-
-	async getTwitchAccessToken(): Promise<string> {
-		// access token exists and is not expired
-		if (
-			this.twitchAccessToken &&
-			this.twitchAccessTokenExpiration >= Date.now()
-		)
-			return this.twitchAccessToken;
-
-		// get access token data from temp file
-		const accessTokenData = (await database.getValue(
-			"temp/access_token"
-		)) as AccessTokenData;
-
-		// check temp file
-		if (accessTokenData !== null) {
-			// access token found
-			if (
-				accessTokenData &&
-				accessTokenData.token &&
-				accessTokenData.expires_at
-			) {
-				// save expiration
-				this.twitchAccessTokenExpiration = Number(
-					accessTokenData.expires_at
-				);
-
-				// if not expired, set it
-				if (this.twitchAccessTokenExpiration >= Date.now()) {
-					// save token
-					this.twitchAccessToken = accessTokenData.token;
-
-					// save expiration
-					this.twitchAccessTokenExpiration = Number(
-						accessTokenData.expires_at
-					);
-					return this.twitchAccessToken;
-				}
-			}
-		}
-
-		// get new access token
+// get access token for twitch api from database or create new one
+async function getTwitchAccessToken(): Promise<string> {
+	// declare twitch access token refresh method
+	let refreshTwitchAccessToken = async (): Promise<void> => {
+		// attempt to get new access token from twitch api
 		try {
 			const response: AxiosResponse = await axios.post(
 				"https://id.twitch.tv/oauth2/token",
@@ -121,18 +130,17 @@ export default class api {
 				}
 			);
 
-			// save token
-			this.twitchAccessToken = response.data.access_token;
-
-			// save expiration
-			this.twitchAccessTokenExpiration =
-				Number(response.data.expires_in) + Date.now();
-
-			// save in temp file
-			database.setValue("temp/access_token", {
+			// save response locally
+			secrets.twitch.access_token = {
 				token: response.data.access_token,
 				expires_at: Number(response.data.expires_in) + Date.now(),
-			});
+			};
+
+			// save externally (database)
+			database.setValue(
+				"secrets/twitch/access_token",
+				secrets.twitch.access_token
+			);
 		} catch (err) {
 			log.error(
 				"Failed Access Token Retrieval:",
@@ -140,92 +148,131 @@ export default class api {
 				err.response.data.message
 			);
 		}
+	};
 
-		return this.twitchAccessToken;
+	// access token does not exist locally
+	if (
+		secrets.twitch.access_token == null &&
+		(secrets.twitch.access_token.token == null ||
+			secrets.twitch.access_token.expires_at == null)
+	) {
+		// check for access token in external database
+		secrets.twitch.access_token = (await database.getValue(
+			"secrets/twitch/access_token"
+		)) as AccessToken;
+
+		// token does not exist externally either -> refresh token
+		if (
+			secrets.twitch.access_token == null &&
+			(secrets.twitch.access_token.token == null ||
+				secrets.twitch.access_token.expires_at == null)
+		)
+			await refreshTwitchAccessToken();
 	}
 
-	async getTwitchUserData(
-		data: {},
-		success: (response: AxiosResponse) => void,
-		fail?: (err: AxiosError) => void
-	): Promise<void> {
-		try {
-			// get access token
-			const accessToken = await this.getTwitchAccessToken();
-			const response: AxiosResponse = await this.twitchAPI.get("users", {
-				params: data,
-				headers: {
-					"Client-Id": config.twitch.client_id,
-					Authorization: "Bearer " + accessToken,
-				},
-			});
-			success(response);
-		} catch (err) {
-			if (fail) fail(err);
-			log.error("Failed Twitch User Retrieval:", err);
-		}
-	}
+	// access token is expired -> refresh token
+	if (secrets.twitch.access_token.expires_at < Date.now())
+		await refreshTwitchAccessToken();
 
-	async getTwitchStreamData(
-		data: {},
-		success: (response: AxiosResponse) => void,
-		fail?: (err: AxiosError) => void
-	): Promise<void> {
-		try {
-			// get access token
-			const accessToken = await this.getTwitchAccessToken();
-			const response: AxiosResponse = await this.twitchAPI.get(
-				"streams",
-				{
-					params: data,
-					headers: {
-						"Client-Id": config.twitch.client_id,
-						Authorization: "Bearer " + accessToken,
-					},
-				}
-			);
-			success(response);
-		} catch (err) {
-			if (fail) fail(err);
-			log.error("Failed Twitch Stream Data Retrieval:", err);
-		}
-	}
-
-	async get7tvData(
-		success: (response: AxiosResponse) => void,
-		fail?: (err: AxiosError) => void
-	): Promise<void> {
-		try {
-			const response: AxiosResponse = await this.stvAPI.get(
-				"users/twitch/" + this.userID
-			);
-			success(response);
-		} catch (err) {
-			if (fail) fail(err);
-			log.error(
-				"Failed 7TV User Retrieval:",
-				err.response.data.status,
-				err.response.data.message
-			);
-		}
-	}
-
-	async getEmoteUsage(
-		success: (response: AxiosResponse) => void,
-		fail?: (err: AxiosError) => void
-	): Promise<void> {
-		try {
-			const response: AxiosResponse = await this.emoteUsageAPI.get(
-				await this.getUsername()
-			);
-			success(response);
-		} catch (err) {
-			log.error(
-				"Failed Twitch User Emotes Data Retrieval:",
-				err.response.status,
-				err.response.statusText
-			);
-			if (fail) fail(err);
-		}
-	}
+	// return token
+	return secrets.twitch.access_token.token;
 }
+
+// get twitch user data from twitch api
+async function getTwitchUserData(userID: string | number): Promise<TwitchUser> {
+	// init user data
+	let twitchUserData: TwitchUser;
+
+	// attempt to get user data from twitch api
+	try {
+		const response: AxiosResponse = await twitchAPI.get("users", {
+			params: { id: String(userID) },
+			headers: {
+				"Client-Id": config.twitch.client_id,
+				Authorization: "Bearer " + (await this.getTwitchAccessToken()),
+			},
+		});
+
+		// save twitch user data
+		twitchUserData = response.data.data[0] as TwitchUser;
+	} catch (err) {
+		log.error("Failed Twitch User Retrieval:", err);
+	}
+
+	// return twitch user data
+	return twitchUserData ? twitchUserData : null;
+}
+
+// get twitch username from twitch user ID
+async function getTwitchUsernameFromID(
+	userID: string | number
+): Promise<string> {
+	// user does not exist locally -> get username
+	if (twitchUsers[userID] == null || twitchUsers[userID].username == null)
+		twitchUsers[userID].username = (
+			await getTwitchUserData(String(userID))
+		).login;
+
+	// return new username
+	return twitchUsers[userID].username;
+}
+
+// get current stream data of specified user from twitch api
+async function getTwitchStreamData(
+	userID: number | string
+): Promise<TwitchStream> {
+	// init stream data
+	let data: TwitchStream;
+
+	// attempt to get stream data
+	try {
+		// get response from twitch API
+		const response: AxiosResponse = await twitchAPI.get("streams", {
+			params: { user_id: String(userID) },
+			headers: {
+				"Client-Id": config.twitch.client_id,
+				Authorization: "Bearer " + (await getTwitchAccessToken()),
+			},
+		});
+
+		// save data from response
+		data = response.data.data[0] as TwitchStream;
+	} catch (err) {
+		// issue getting stream data
+		log.error("Failed Twitch Stream Data Retrieval:", err);
+	}
+
+	// return stream data
+	return data ? data : null;
+}
+
+// get 7tv emote count data from kattah api
+async function get7TVEmoteCount(userID: string | number): Promise<number> {
+	// init emote count
+	let emoteCount: number;
+
+	// attempt to get emote count from kattah api
+	try {
+		const response: AxiosResponse = await kattahAPI.get(
+			await getTwitchUsernameFromID(String(userID))
+		);
+
+		// save emote count (from specified emote in config)
+		emoteCount = utility.JSON.getObjectsFromKeyValue(
+			response.data.emotes,
+			"emote",
+			config.desiredEmote
+		)[0].count;
+	} catch (error) {
+		// issue getting emote count
+		log.message(error);
+	}
+
+	// return emote count
+	return emoteCount ? emoteCount : null;
+}
+
+export default {
+	getStreamData: getTwitchStreamData,
+	getEmoteCount: get7TVEmoteCount,
+};
