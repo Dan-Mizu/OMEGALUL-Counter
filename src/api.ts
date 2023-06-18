@@ -173,9 +173,9 @@ async function getTwitchAccessToken(): Promise<string> {
 
 	// access token does not exist locally
 	if (
-		secrets.twitch.access_token == null &&
-		(secrets.twitch.access_token.token == null ||
-			secrets.twitch.access_token.expires_at == null)
+		secrets.twitch.access_token == null ||
+		secrets.twitch.access_token.token == null ||
+		secrets.twitch.access_token.expires_at == null
 	) {
 		// check for access token in external database
 		secrets.twitch.access_token = (await database.getValue(
@@ -184,9 +184,9 @@ async function getTwitchAccessToken(): Promise<string> {
 
 		// token does not exist externally either -> refresh token
 		if (
-			secrets.twitch.access_token == null &&
-			(secrets.twitch.access_token.token == null ||
-				secrets.twitch.access_token.expires_at == null)
+			secrets.twitch.access_token == null ||
+			secrets.twitch.access_token.token == null ||
+			secrets.twitch.access_token.expires_at == null
 		)
 			await refreshTwitchAccessToken();
 	}
