@@ -42,15 +42,27 @@ async function streamStarted(streamData: TwitchStream): Promise<void> {
 
 	// store stream info and marker
 	database.setValue("stream/" + config.twitchUserID + "/" + streamData.id, {
+		// starting title
 		title: streamData.title,
+		// starting view count
 		viewers: streamData.viewer_count,
+		// start time in RFC3339 format
+		started_at: new Date().toISOString(),
+		// start marker
 		marker: {
 			[Date.now()]: {
+				// marker type
 				type: "start",
+				// current category data
 				category: {
 					id: streamData.game_id,
 					name: streamData.game_name,
 				},
+				// current title
+				title: streamData.title,
+				// category start time in RFC3339 format
+				started_at: new Date().toISOString(),
+				// current emote count
 				emoteCount: currentEmoteCount,
 			},
 		},
@@ -134,11 +146,18 @@ async function streamChanged(
 			"/marker/" +
 			Date.now(),
 		{
+			// marker type
 			type: "category_changed",
+			// current category data
 			category: {
 				id: streamData.game_id,
 				name: streamData.game_name,
 			},
+			// current title
+			title: streamData.title,
+			// category start time in RFC3339 format
+			started_at: new Date().toISOString(),
+			// current emote count
 			emoteCount: currentEmoteCount,
 		}
 	);
@@ -196,7 +215,7 @@ async function streamEnded(
 		}
 	);
 
-	// add new marker
+	// end marker
 	database.updateValue(
 		"stream/" +
 			config.twitchUserID +
@@ -205,11 +224,18 @@ async function streamEnded(
 			"/marker/" +
 			Date.now(),
 		{
+			// marker type
 			type: "end",
+			// current category data
 			category: {
 				id: streamData.game_id,
 				name: streamData.game_name,
 			},
+			// current title
+			title: streamData.title,
+			// category start time in RFC3339 format
+			started_at: new Date().toISOString(),
+			// current emote count
 			emoteCount: currentEmoteCount,
 		}
 	);
@@ -234,8 +260,12 @@ async function streamEnded(
 	database.updateValue(
 		"stream/" + config.twitchUserID + "/" + streamData.id,
 		{
+			// ending title
 			title: streamData.title,
+			// highest view count in stream
 			viewers: streamData.viewer_count,
+			// end time in RFC3339 format
+			ended_at: new Date().toISOString(),
 			// total emote usage
 			emoteUsage: currentEmoteCount - firstEmoteCount,
 			// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
@@ -404,12 +434,12 @@ async function updateStreamData(
 		// check for stream data update
 		if (queriedStreamData) {
 			// get all local stream data
-			let allsavedStreamData = await database.getValue(
+			let allSavedStreamData = await database.getValue(
 				"temp/stream/" + config.twitchUserID
 			);
 
 			// update local stream data
-			allsavedStreamData = {
+			allSavedStreamData = {
 				id: savedStreamData.id,
 				// new category info?
 				game_id: queriedStreamData.game_id,
@@ -427,7 +457,7 @@ async function updateStreamData(
 			// store updated local stream data
 			database.setValue(
 				"temp/stream/" + config.twitchUserID,
-				allsavedStreamData
+				allSavedStreamData
 			);
 
 			// new stream ID? (end old stream and start new stream)
