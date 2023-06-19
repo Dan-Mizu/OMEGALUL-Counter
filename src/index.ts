@@ -351,6 +351,35 @@ async function streamUpdate(
 			},
 			failure
 		);
+
+	// new view count record for this stream?
+	if (newStreamData.viewer_count > oldStreamData.viewer_count)
+		database.updateValue(
+			"stream/" + config.twitchUserID + "/" + oldStreamData.id,
+			{
+				// highest view count in stream
+				viewers: newStreamData.viewer_count,
+			}
+		);
+
+	// save current view count in last marker
+	database.updateValue(
+		"stream/" +
+			config.twitchUserID +
+			"/" +
+			oldStreamData.id +
+			"/marker/" +
+			(await database.getLastKey(
+				"stream/" +
+					config.twitchUserID +
+					"/" +
+					oldStreamData.id +
+					"/marker"
+			)),
+		{
+			viewers: newStreamData.viewer_count,
+		}
+	);
 }
 
 // update stream data
@@ -487,7 +516,9 @@ async function updateStreamData(
 			streamStarted(queriedStreamData);
 		// streamer probably changed category before starting stream. typical. (ignore)
 		else if (providedStreamData.type === "category_changed")
-			logFailure("Received Category Changed event, but there is no record of a stream starting!");
+			logFailure(
+				"Received Category Changed event, but there is no record of a stream starting!"
+			);
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
 		else if (providedStreamData.type === "end" && queriedStreamData)
 			streamEnded(queriedStreamData, logFailure);
