@@ -277,7 +277,7 @@ async function updateStreamData(
 		  }
 ) {
 	// get local stream data
-	let localStreamData = await database.getValue(
+	let savedStreamData = await database.getValue(
 		"temp/stream/" + config.twitchUserID
 	);
 
@@ -290,22 +290,22 @@ async function updateStreamData(
 		log.warn(
 			message,
 			"Provided Data: " + JSON.stringify(providedStreamData),
-			"Local Data: " + JSON.stringify(localStreamData),
+			"Local Data: " + JSON.stringify(savedStreamData),
 			"Queried Data " + JSON.stringify(queriedStreamData)
 		);
 		return;
 	};
 
 	// compare provided stream data against local stream data
-	if (providedStreamData && localStreamData) {
+	if (providedStreamData && savedStreamData) {
 		// stream start event and local data means my routine query caught it first, or there was a restart
 		if (providedStreamData.type === "start") {
 			// local and event stream ID don't match (restarted stream: end old stream, create new stream)
-			if (localStreamData.id !== providedStreamData.id) {
+			if (savedStreamData.id !== providedStreamData.id) {
 				// queried stream data acquired
 				if (queriedStreamData) {
 					// end previous stream
-					streamEnded(localStreamData, logFailure);
+					streamEnded(savedStreamData, logFailure);
 
 					// start new stream
 					streamStarted(queriedStreamData);
@@ -329,11 +329,11 @@ async function updateStreamData(
 			if (queriedStreamData)
 				streamChanged(
 					{
-						id: localStreamData.id,
+						id: savedStreamData.id,
 						game_id: queriedStreamData.game_id,
 						game_name: queriedStreamData.game_name,
-						title: localStreamData.title,
-						viewer_count: localStreamData.view_count,
+						title: savedStreamData.title,
+						viewer_count: savedStreamData.view_count,
 					},
 					logFailure
 				);
@@ -349,21 +349,21 @@ async function updateStreamData(
 			// queried stream data acquired
 			if (queriedStreamData) {
 				// local and queried stream data match (end stream)
-				if (localStreamData.id === queriedStreamData.id)
+				if (savedStreamData.id === queriedStreamData.id)
 					streamEnded(
 						{
-							id: localStreamData.id,
-							game_id: localStreamData.game_id,
-							game_name: localStreamData.game_name,
+							id: savedStreamData.id,
+							game_id: savedStreamData.game_id,
+							game_name: savedStreamData.game_name,
 							title: queriedStreamData.title,
-							viewer_count: localStreamData.view_count,
+							viewer_count: savedStreamData.view_count,
 						},
 						logFailure
 					);
 				// local and queried stream id do not match (restarted stream: end old stream, create new stream)
 				else {
 					// end previous stream
-					streamEnded(localStreamData, logFailure);
+					streamEnded(savedStreamData, logFailure);
 
 					// start new stream
 					streamStarted(queriedStreamData);
@@ -371,18 +371,18 @@ async function updateStreamData(
 			}
 
 			// no queried data found, go with local state (end stream)
-			else streamEnded(localStreamData, logFailure);
+			else streamEnded(savedStreamData, logFailure);
 		}
 	}
 
 	// provided stream data but no local stream data found (start stream)
-	else if (providedStreamData && !localStreamData) {
+	else if (providedStreamData && !savedStreamData) {
 		// start stream event with queried stream data, caught before routine query did (start stream)
 		if (providedStreamData.type === "start" && queriedStreamData)
 			streamStarted(queriedStreamData);
 		// streamer probably changed category before starting stream. typical. (ignore)
 		else if (providedStreamData.type === "category_changed")
-			logFailure(localStreamData);
+			logFailure(savedStreamData);
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
 		else if (providedStreamData.type === "end" && queriedStreamData)
 			streamEnded(queriedStreamData, logFailure);
@@ -400,17 +400,17 @@ async function updateStreamData(
 	}
 
 	// no provided stream data, but local stream data found (check for updates or end stream)
-	else if (!providedStreamData && localStreamData) {
+	else if (!providedStreamData && savedStreamData) {
 		// check for stream data update
 		if (queriedStreamData) {
 			// get all local stream data
-			let allLocalStreamData = await database.getValue(
+			let allsavedStreamData = await database.getValue(
 				"temp/stream/" + config.twitchUserID
 			);
 
 			// update local stream data
-			allLocalStreamData = {
-				id: localStreamData.id,
+			allsavedStreamData = {
+				id: savedStreamData.id,
 				// new category info?
 				game_id: queriedStreamData.game_id,
 				game_name: queriedStreamData.game_name,
@@ -419,50 +419,50 @@ async function updateStreamData(
 				// keep largest viewer count
 				viewer_count:
 					queriedStreamData.viewer_count >
-					localStreamData.viewer_count
+					savedStreamData.viewer_count
 						? queriedStreamData.viewer_count
-						: localStreamData.viewer_count,
+						: savedStreamData.viewer_count,
 			};
 
 			// store updated local stream data
 			database.setValue(
 				"temp/stream/" + config.twitchUserID,
-				allLocalStreamData
+				allsavedStreamData
 			);
 
 			// new stream ID? (end old stream and start new stream)
-			if (queriedStreamData.id !== localStreamData.id) {
+			if (queriedStreamData.id !== savedStreamData.id) {
 				// end previous stream
-				streamEnded(localStreamData, logFailure);
+				streamEnded(savedStreamData, logFailure);
 
 				// start new stream
 				streamStarted(queriedStreamData);
 			}
 
 			// new category? update database with new category marker
-			else if (queriedStreamData.game_id !== localStreamData.game_id)
+			else if (queriedStreamData.game_id !== savedStreamData.game_id)
 				// stream changed
 				streamChanged(
 					{
-						id: localStreamData.id,
+						id: savedStreamData.id,
 						game_id: queriedStreamData.game_id,
 						game_name: queriedStreamData.game_name,
-						title: localStreamData.title,
-						viewer_count: localStreamData.view_count,
+						title: savedStreamData.title,
+						viewer_count: savedStreamData.view_count,
 					},
 					logFailure
 				);
 		}
 
 		// no queried stream data found (end stream)
-		else streamEnded(localStreamData, logFailure);
+		else streamEnded(savedStreamData, logFailure);
 	}
 
 	// no provided or local stream data found but queried stream data found (create local stream data and start stream)
-	else if (!providedStreamData && !localStreamData && queriedStreamData)
+	else if (!providedStreamData && !savedStreamData && queriedStreamData)
 		streamStarted(queriedStreamData);
 	// no provided stream data, local stream data, or queried stream data? 🏖️🐎 MAN (ignore, and wait for streamer to go live SAJ)
-	else if (!providedStreamData && !localStreamData && !queriedStreamData)
+	else if (!providedStreamData && !savedStreamData && !queriedStreamData)
 		return;
 }
 
