@@ -265,6 +265,8 @@ async function streamEnded(
 			viewers: streamData.viewer_count,
 			// end time in RFC3339 format
 			ended_at: new Date().toISOString(),
+			// uptime in hours
+			uptime: (Date.now() - Number(firstMarker)) / (60 * 60 * 1000),
 			// total emote usage
 			emoteUsage: currentEmoteCount - firstEmoteCount,
 			// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
