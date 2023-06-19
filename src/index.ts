@@ -10,7 +10,6 @@ import database from "./utility/database.js";
 
 // get data
 import config from "../config/config.json" assert { type: "json" };
-import { debug } from "console";
 
 // types
 interface SimpleTwitchStream {

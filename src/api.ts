@@ -249,7 +249,12 @@ async function getTwitchUsernameFromID(
 	userID: string | number
 ): Promise<string> {
 	// user does not exist locally -> get username
-	if (twitchUsers[userID] == null || twitchUsers[userID].username == null)
+	if (twitchUsers[userID] == null)
+		twitchUsers[userID] = {
+			username: (await getTwitchUserData(String(userID))).display_name,
+		};
+	// username missing -> get username
+	else if (twitchUsers[userID].username == null)
 		twitchUsers[userID].username = (
 			await getTwitchUserData(String(userID))
 		).display_name;
