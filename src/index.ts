@@ -391,6 +391,7 @@ async function updateStreamData(
 
 	// ignore if provided category ID matches current saved stream state's category ID
 	if (
+		providedStreamData &&
 		providedStreamData.type === "category_changed" &&
 		providedStreamData.category_id === savedStreamData.game_id
 	) {
