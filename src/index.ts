@@ -43,10 +43,12 @@ async function streamStarted(streamData: TwitchStream): Promise<void> {
 	database.setValue("stream/" + config.twitchUserID + "/" + streamData.id, {
 		// starting title
 		title: streamData.title,
-		// starting view count
+		// starting viewers
 		viewers: streamData.viewer_count,
 		// start time in RFC3339 format
-		started_at: new Date().toISOString(),
+		started_at: streamData.started_at
+			? streamData.started_at
+			: new Date().toISOString(),
 		// start marker
 		marker: {
 			[Date.now()]: {
@@ -60,7 +62,9 @@ async function streamStarted(streamData: TwitchStream): Promise<void> {
 				// current title
 				title: streamData.title,
 				// category start time in RFC3339 format
-				started_at: new Date().toISOString(),
+				started_at: streamData.started_at
+					? streamData.started_at
+					: new Date().toISOString(),
 				// current emote count
 				emoteCount: currentEmoteCount,
 			},
@@ -93,16 +97,18 @@ async function streamChanged(
 	}
 
 	// check if category actually changed from last marker
-	const lastMarkerCategoryID: string = await database.getValue(
-		"stream/" +
-			config.twitchUserID +
-			"/" +
-			streamData.id +
-			"/marker" +
-			lastMarker +
-			"category/id"
-	);
-	if (streamData.game_id === lastMarkerCategoryID) {
+	if (
+		streamData.game_id ==
+		(await database.getValue(
+			"stream/" +
+				config.twitchUserID +
+				"/" +
+				streamData.id +
+				"/marker" +
+				lastMarker +
+				"category/id"
+		))
+	) {
 		failure(
 			"Received Category Change Event, but the last marker is the same category!"
 		);
@@ -302,6 +308,51 @@ async function streamEnded(
 	);
 }
 
+// check for other new changes in the stream
+async function streamUpdate(
+	newStreamData: TwitchStream,
+	oldStreamData: SimpleTwitchStream,
+	failure: (message: string) => void
+) {
+	// store updated stream data
+	database.setValue("temp/stream/" + config.twitchUserID, {
+		id: oldStreamData.id,
+		// new category info?
+		game_id: newStreamData.game_id,
+		game_name: newStreamData.game_name,
+		// new title?
+		title: newStreamData.title,
+		// keep largest viewer count
+		viewer_count:
+			newStreamData.viewer_count > oldStreamData.viewer_count
+				? newStreamData.viewer_count
+				: oldStreamData.viewer_count,
+	});
+
+	// new stream ID? (end old stream and start new stream)
+	if (newStreamData.id !== oldStreamData.id) {
+		// end previous stream
+		streamEnded(oldStreamData, failure);
+
+		// start new stream
+		streamStarted(newStreamData);
+	}
+
+	// new category? update database with new category marker
+	else if (newStreamData.game_id !== oldStreamData.game_id)
+		// stream changed
+		streamChanged(
+			{
+				id: oldStreamData.id,
+				game_id: newStreamData.game_id,
+				game_name: newStreamData.game_name,
+				title: oldStreamData.title,
+				viewer_count: oldStreamData.viewer_count,
+			},
+			failure
+		);
+}
+
 // update stream data
 async function updateStreamData(
 	providedStreamData?:
@@ -319,7 +370,7 @@ async function updateStreamData(
 		  }
 ) {
 	// get local stream data
-	let savedStreamData = await database.getValue(
+	let savedStreamData: SimpleTwitchStream = await database.getValue(
 		"temp/stream/" + config.twitchUserID
 	);
 
@@ -337,6 +388,17 @@ async function updateStreamData(
 		);
 		return;
 	};
+
+	// ignore if provided category ID matches current saved stream state's category ID
+	if (
+		providedStreamData.type === "category_changed" &&
+		providedStreamData.category_id === savedStreamData.game_id
+	) {
+		logFailure(
+			"Received Category Change event, but the new category is the same as the current saved stream state's category!"
+		);
+		return;
+	}
 
 	// compare provided stream data against local stream data
 	if (providedStreamData && savedStreamData) {
@@ -444,58 +506,8 @@ async function updateStreamData(
 	// no provided stream data, but local stream data found (check for updates or end stream)
 	else if (!providedStreamData && savedStreamData) {
 		// check for stream data update
-		if (queriedStreamData) {
-			// get all local stream data
-			let allSavedStreamData = await database.getValue(
-				"temp/stream/" + config.twitchUserID
-			);
-
-			// update local stream data
-			allSavedStreamData = {
-				id: savedStreamData.id,
-				// new category info?
-				game_id: queriedStreamData.game_id,
-				game_name: queriedStreamData.game_name,
-				// new title?
-				title: queriedStreamData.title,
-				// keep largest viewer count
-				viewer_count:
-					queriedStreamData.viewer_count >
-					savedStreamData.viewer_count
-						? queriedStreamData.viewer_count
-						: savedStreamData.viewer_count,
-			};
-
-			// store updated local stream data
-			database.setValue(
-				"temp/stream/" + config.twitchUserID,
-				allSavedStreamData
-			);
-
-			// new stream ID? (end old stream and start new stream)
-			if (queriedStreamData.id !== savedStreamData.id) {
-				// end previous stream
-				streamEnded(savedStreamData, logFailure);
-
-				// start new stream
-				streamStarted(queriedStreamData);
-			}
-
-			// new category? update database with new category marker
-			else if (queriedStreamData.game_id !== savedStreamData.game_id)
-				// stream changed
-				streamChanged(
-					{
-						id: savedStreamData.id,
-						game_id: queriedStreamData.game_id,
-						game_name: queriedStreamData.game_name,
-						title: savedStreamData.title,
-						viewer_count: savedStreamData.view_count,
-					},
-					logFailure
-				);
-		}
-
+		if (queriedStreamData)
+			streamUpdate(queriedStreamData, savedStreamData, logFailure);
 		// no queried stream data found (end stream)
 		else streamEnded(savedStreamData, logFailure);
 	}
