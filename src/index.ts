@@ -161,6 +161,17 @@ async function streamChanged(
 		}
 	);
 
+	// update stream info
+	database.updateValue(
+		"stream/" + config.twitchUserID + "/" + streamData.id,
+		{
+			// current title
+			title: streamData.title,
+			// current highest view count in stream
+			viewers: streamData.viewer_count,
+		}
+	);
+
 	// log
 	log.message(
 		"[" + streamData.id + "]",
