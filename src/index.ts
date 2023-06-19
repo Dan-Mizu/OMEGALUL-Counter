@@ -437,7 +437,7 @@ async function updateStreamData(
 						game_id: queriedStreamData.game_id,
 						game_name: queriedStreamData.game_name,
 						title: savedStreamData.title,
-						viewer_count: savedStreamData.view_count,
+						viewer_count: savedStreamData.viewer_count,
 					},
 					logFailure
 				);
@@ -460,7 +460,7 @@ async function updateStreamData(
 							game_id: savedStreamData.game_id,
 							game_name: savedStreamData.game_name,
 							title: queriedStreamData.title,
-							viewer_count: savedStreamData.view_count,
+							viewer_count: savedStreamData.viewer_count,
 						},
 						logFailure
 					);
