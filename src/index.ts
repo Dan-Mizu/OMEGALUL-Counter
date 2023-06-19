@@ -486,7 +486,7 @@ async function updateStreamData(
 			streamStarted(queriedStreamData);
 		// streamer probably changed category before starting stream. typical. (ignore)
 		else if (providedStreamData.type === "category_changed")
-			logFailure(savedStreamData);
+			logFailure("Received Category Changed event, but there is no record of a stream starting!");
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
 		else if (providedStreamData.type === "end" && queriedStreamData)
 			streamEnded(queriedStreamData, logFailure);
