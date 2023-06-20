@@ -79,7 +79,7 @@ async function streamStarted(streamData: TwitchStream): Promise<void> {
 }
 
 // change category
-async function streamChanged(
+async function streamCategoryChanged(
 	streamData: SimpleTwitchStream,
 	failure: (message: string) => void
 ): Promise<void> {
@@ -341,7 +341,7 @@ async function streamUpdate(
 	// new category? update database with new category marker
 	else if (newStreamData.game_id !== oldStreamData.game_id)
 		// stream changed
-		streamChanged(
+		streamCategoryChanged(
 			{
 				id: oldStreamData.id,
 				game_id: newStreamData.game_id,
@@ -378,6 +378,40 @@ async function streamUpdate(
 			)),
 		{
 			viewers: newStreamData.viewer_count,
+		}
+	);
+
+	// get first marker key (stream start marker)
+	const firstMarker: string = await database.getFirstKey(
+		"stream/" + config.twitchUserID + "/" + oldStreamData.id + "/marker"
+	);
+
+	// get first marker's emote count (stream start marker)
+	const firstEmoteCount: number = await database.getValue(
+		"stream/" +
+			config.twitchUserID +
+			"/" +
+			oldStreamData.id +
+			"/marker/" +
+			firstMarker +
+			"/emoteCount"
+	);
+
+	// get current emote count
+	const currentEmoteCount = await api.getEmoteCount(config.twitchUserID);
+
+	// update stream info (current uptime and emote usage/emote per hour)
+	database.updateValue(
+		"stream/" + config.twitchUserID + "/" + oldStreamData.id,
+		{
+			// uptime in hours
+			uptime: (Date.now() - Number(firstMarker)) / (60 * 60 * 1000),
+			// total emote usage
+			emoteUsage: currentEmoteCount - firstEmoteCount,
+			// calculate emotes per hour (total emote usage / stream length in milliseconds converted to hours)
+			emotePerHour:
+				(currentEmoteCount - firstEmoteCount) /
+				((Date.now() - Number(firstMarker)) / (60 * 60 * 1000)),
 		}
 	);
 }
@@ -459,9 +493,12 @@ async function updateStreamData(
 
 		// use local stream data with category change event update (might overlap if routine query caught it first... hmm...)
 		else if (providedStreamData.type === "category_changed") {
-			// queried stream data acquired (change stream category)
-			if (queriedStreamData)
-				streamChanged(
+			// queried stream data acquired and category ID is different (change stream category)
+			if (
+				queriedStreamData &&
+				providedStreamData.category_id !== savedStreamData.game_id
+			)
+				streamCategoryChanged(
 					{
 						id: savedStreamData.id,
 						game_id: queriedStreamData.game_id,
