@@ -9,8 +9,6 @@
         "client_id": "",
         "client_secret": ""
     },
-    "twitchUserID": "",
-    "desiredEmote": "OMEGALUL",
     "webhookConfig": {
         "hostName": "",
         "sslCert": {

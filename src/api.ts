@@ -293,7 +293,7 @@ async function getTwitchStreamData(
 }
 
 // get 7tv emote count data from kattah api
-async function get7TVEmoteCount(userID: string | number): Promise<number> {
+async function get7TVEmoteCount(userID: string | number, desiredEmote: string): Promise<number> {
 	// init emote count
 	let emoteCount: number;
 
@@ -308,7 +308,7 @@ async function get7TVEmoteCount(userID: string | number): Promise<number> {
 			utility.JSON.getObjectsFromKeyValue(
 				channel.emotes,
 				"emote",
-				config.desiredEmote
+				desiredEmote
 			) as KattahEmote[]
 		)[0].count;
 	} catch (error) {
