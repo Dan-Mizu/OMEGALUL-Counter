@@ -496,6 +496,7 @@ async function updateStreamData(
 	// ignore if provided category ID matches current saved stream state's category ID
 	if (
 		providedStreamData &&
+		savedStreamData &&
 		providedStreamData.type === "category_changed" &&
 		providedStreamData.category_id == savedStreamData.game_id
 	) {
@@ -564,9 +565,16 @@ async function updateStreamData(
 				);
 			}
 			// a category change near/after the stream ended or before it began. either way its weird. (ignore)
-			else
+			else if (queriedStreamData == null)
 				logFailure(
 					"Received Category Change Event, but there does not seem to be an active stream."
+				);
+			else if (
+				providedStreamData.category_id == savedStreamData.game_id ||
+				queriedStreamData.game_id == savedStreamData.game_id
+			)
+				logFailure(
+					"Received Category Change Event, but the queried or provided category ID matches the saved category ID."
 				);
 		}
 
