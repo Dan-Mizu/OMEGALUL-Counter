@@ -483,7 +483,7 @@ async function updateStreamData(
 	// declare debug callback
 	const logFailure = (message: string) => {
 		// log
-		log.warn(
+		log.debug(
 			message,
 			"Streamer ID: " + twitchUserID,
 			"Provided Data: " + JSON.stringify(providedStreamData),
