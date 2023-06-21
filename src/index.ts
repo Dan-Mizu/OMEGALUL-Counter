@@ -84,7 +84,7 @@ async function streamStarted(
 		"|",
 		"Stream ID: " + streamData.id + "]",
 		'"' + streamData.title + '" started with category',
-		streamData.game_name + "."
+		'"' + streamData.game_name + '".'
 	);
 }
 
@@ -196,7 +196,7 @@ async function streamCategoryChanged(
 		"|",
 		"Stream ID: " + streamData.id + "]",
 		'"' + streamData.title + '"',
-		"category changed to " + streamData.game_name
+		'category changed to "' + streamData.game_name + '".'
 	);
 }
 
@@ -317,12 +317,13 @@ async function streamEnded(
 		"[User ID: " + twitchUserID,
 		"|",
 		"Stream ID: " + streamData.id + "]",
-		'"' + streamData.title + '" ended',
+		'"' + streamData.title + '" ended with category:',
+		'"' + streamData.game_name + '".',
 		"Total Counted Emotes:",
-		currentEmoteCount - firstEmoteCount,
+		currentEmoteCount - firstEmoteCount + ".",
 		"Uptime:",
 		(Date.now() - Number(firstMarker)) / (60 * 60 * 1000),
-		"hours"
+		"hours."
 	);
 }
 
