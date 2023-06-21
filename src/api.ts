@@ -266,7 +266,7 @@ async function getTwitchUsernameFromID(
 // get current stream data of specified user from twitch api
 async function getTwitchStreamData(
 	userID: number | string
-): Promise<TwitchStream> {
+): Promise<TwitchStream | null> {
 	// init stream data
 	let data: TwitchStream;
 

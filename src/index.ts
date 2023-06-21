@@ -80,8 +80,11 @@ async function streamStarted(
 
 	// log
 	log.message(
-		"[" + streamData.id + "]",
-		'Stream "' + streamData.title + '" started.'
+		"[User ID: " + twitchUserID,
+		"|",
+		"Stream ID: " + streamData.id + "]",
+		'"' + streamData.title + '" started with category',
+		streamData.game_name + "."
 	);
 }
 
@@ -98,7 +101,7 @@ async function streamCategoryChanged(
 	);
 
 	// last marker is missing (aka no stream start), then cancel
-	if (!lastMarker) {
+	if (lastMarker == null) {
 		failure(
 			"Received Category Change Event, but have no record of a stream starting."
 		);
@@ -189,8 +192,10 @@ async function streamCategoryChanged(
 
 	// log
 	log.message(
-		"[" + streamData.id + "]",
-		'Stream "' + streamData.title + '"',
+		"[User ID: " + twitchUserID,
+		"|",
+		"Stream ID: " + streamData.id + "]",
+		'"' + streamData.title + '"',
 		"category changed to " + streamData.game_name
 	);
 }
@@ -208,7 +213,7 @@ async function streamEnded(
 	);
 
 	// last marker is missing (aka no stream start), then cancel
-	if (!lastMarker) {
+	if (lastMarker == null) {
 		failure(
 			"Received End Stream Event, but have no record of a stream starting."
 		);
@@ -309,8 +314,10 @@ async function streamEnded(
 
 	// log
 	log.message(
-		"[" + streamData.id + "]",
-		'Stream "' + streamData.title + '" ended',
+		"[User ID: " + twitchUserID,
+		"|",
+		"Stream ID: " + streamData.id + "]",
+		'"' + streamData.title + '" ended',
 		"Total Counted Emotes:",
 		currentEmoteCount - firstEmoteCount,
 		"Uptime:",
@@ -319,7 +326,7 @@ async function streamEnded(
 	);
 }
 
-async function storeStreamState(
+async function updateStreamState(
 	twitchUserID: string,
 	stvEmoteName: string,
 	newStreamData: TwitchStream,
@@ -391,16 +398,13 @@ async function storeStreamState(
 }
 
 // check for other new changes in the stream
-async function streamUpdate(
+async function validateStreamState(
 	twitchUserID: string,
 	stvEmoteName: string,
 	newStreamData: TwitchStream,
 	oldStreamData: SimpleTwitchStream,
 	failure: (message: string) => void
 ) {
-	// update stored stream state data
-	storeStreamState(twitchUserID, stvEmoteName, newStreamData, oldStreamData);
-
 	// new stream ID? (end old stream and start new stream)
 	if (newStreamData.id !== oldStreamData.id) {
 		// end previous stream
@@ -414,7 +418,7 @@ async function streamUpdate(
 	}
 
 	// new category? update database with new category marker
-	if (newStreamData.game_id !== oldStreamData.game_id)
+	if (newStreamData.game_id != oldStreamData.game_id)
 		// stream changed
 		streamCategoryChanged(
 			twitchUserID,
@@ -459,18 +463,28 @@ async function updateStreamData(
 		  }
 ) {
 	// get local stream data
-	let savedStreamData: SimpleTwitchStream = await database.getValue(
+	let savedStreamData: SimpleTwitchStream | null = await database.getValue(
 		"temp/stream/" + twitchUserID
 	);
 
 	// query stream data from twitch api
 	const queriedStreamData = await api.getStreamData(twitchUserID);
 
+	// update stored stream state
+	if (queriedStreamData != null && savedStreamData != null)
+		updateStreamState(
+			twitchUserID,
+			stvEmoteName,
+			queriedStreamData,
+			savedStreamData
+		);
+
 	// declare debug callback
 	const logFailure = (message: string) => {
 		// log
 		log.warn(
 			message,
+			"Streamer ID: " + twitchUserID,
 			"Provided Data: " + JSON.stringify(providedStreamData),
 			"Local Data: " + JSON.stringify(savedStreamData),
 			"Queried Data " + JSON.stringify(queriedStreamData)
@@ -482,7 +496,7 @@ async function updateStreamData(
 	if (
 		providedStreamData &&
 		providedStreamData.type === "category_changed" &&
-		providedStreamData.category_id === savedStreamData.game_id
+		providedStreamData.category_id == savedStreamData.game_id
 	) {
 		logFailure(
 			"Received Category Change event, but the new category is the same as the current saved stream state's category!"
@@ -495,17 +509,9 @@ async function updateStreamData(
 		// stream start event and local data means my routine query caught it first, or there was a restart
 		if (providedStreamData.type === "start") {
 			// local and event stream ID don't match (restarted stream: end old stream, create new stream)
-			if (savedStreamData.id !== providedStreamData.id) {
+			if (savedStreamData.id != providedStreamData.id) {
 				// queried stream data acquired
 				if (queriedStreamData) {
-					// update stored stream state data
-					storeStreamState(
-						twitchUserID,
-						stvEmoteName,
-						queriedStreamData,
-						savedStreamData
-					);
-
 					// end previous stream
 					streamEnded(
 						twitchUserID,
@@ -536,10 +542,11 @@ async function updateStreamData(
 
 		// use local stream data with category change event update (might overlap if routine query caught it first... hmm...)
 		else if (providedStreamData.type === "category_changed") {
-			// queried stream data acquired and category ID is different (change stream category)
+			// queried/provided category ID and saved category ID is different (change stream category)
 			if (
 				queriedStreamData &&
-				providedStreamData.category_id !== savedStreamData.game_id
+				providedStreamData.category_id != savedStreamData.game_id &&
+				queriedStreamData.game_id != savedStreamData.game_id
 			) {
 				// update category data
 				streamCategoryChanged(
@@ -554,14 +561,6 @@ async function updateStreamData(
 					},
 					logFailure
 				);
-
-				// update stored stream state data
-				storeStreamState(
-					twitchUserID,
-					stvEmoteName,
-					queriedStreamData,
-					savedStreamData
-				);
 			}
 			// a category change near/after the stream ended or before it began. either way its weird. (ignore)
 			else
@@ -575,15 +574,7 @@ async function updateStreamData(
 			// queried stream data acquired
 			if (queriedStreamData) {
 				// local and queried stream data match (end stream)
-				if (savedStreamData.id === queriedStreamData.id) {
-					// update stored stream state data
-					storeStreamState(
-						twitchUserID,
-						stvEmoteName,
-						queriedStreamData,
-						savedStreamData
-					);
-
+				if (savedStreamData.id == queriedStreamData.id)
 					// end stream
 					streamEnded(
 						twitchUserID,
@@ -597,17 +588,8 @@ async function updateStreamData(
 						},
 						logFailure
 					);
-				}
 				// local and queried stream id do not match (restarted stream: end old stream, create new stream)
 				else {
-					// update stored stream state data
-					storeStreamState(
-						twitchUserID,
-						stvEmoteName,
-						queriedStreamData,
-						savedStreamData
-					);
-
 					// end previous stream
 					streamEnded(
 						twitchUserID,
@@ -637,35 +619,18 @@ async function updateStreamData(
 	}
 
 	// provided stream data but no local stream data found (start stream)
-	else if (providedStreamData && !savedStreamData) {
+	else if (providedStreamData && savedStreamData == null) {
 		// start stream event with queried stream data, caught before routine query did (start stream)
-		if (providedStreamData.type === "start" && queriedStreamData) {
-			// update stored stream state data
-			storeStreamState(
-				twitchUserID,
-				stvEmoteName,
-				queriedStreamData,
-				savedStreamData
-			);
-
+		if (providedStreamData.type === "start" && queriedStreamData)
 			// start stream
 			streamStarted(twitchUserID, stvEmoteName, queriedStreamData);
-		}
 		// streamer probably changed category before starting stream. typical. (ignore)
 		else if (providedStreamData.type === "category_changed")
 			logFailure(
 				"Received Category Changed event, but there is no record of a stream starting!"
 			);
 		// crap. stream is ending and I don't even have a reference to the ID. hopefully there was a successful query (end stream)
-		else if (providedStreamData.type === "end" && queriedStreamData) {
-			// update stored stream state data
-			storeStreamState(
-				twitchUserID,
-				stvEmoteName,
-				queriedStreamData,
-				savedStreamData
-			);
-
+		else if (providedStreamData.type === "end" && queriedStreamData)
 			// end stream
 			streamEnded(
 				twitchUserID,
@@ -673,7 +638,6 @@ async function updateStreamData(
 				queriedStreamData,
 				logFailure
 			);
-		}
 		// welp. stream is ending without a proper reference to the stream ID. last resort is to check the database.
 		else {
 			// check for last stream in database without end marker
@@ -688,10 +652,10 @@ async function updateStreamData(
 	}
 
 	// no provided stream data, but local stream data found (check for updates or end stream)
-	else if (!providedStreamData && savedStreamData) {
+	else if (providedStreamData == null && savedStreamData) {
 		// check for stream data update
 		if (queriedStreamData)
-			streamUpdate(
+			validateStreamState(
 				twitchUserID,
 				stvEmoteName,
 				queriedStreamData,
@@ -709,10 +673,18 @@ async function updateStreamData(
 	}
 
 	// no provided or local stream data found but queried stream data found (create local stream data and start stream)
-	else if (!providedStreamData && !savedStreamData && queriedStreamData)
+	else if (
+		providedStreamData == null &&
+		savedStreamData == null &&
+		queriedStreamData
+	)
 		streamStarted(twitchUserID, stvEmoteName, queriedStreamData);
 	// no provided stream data, local stream data, or queried stream data? 🏖️🐎 MAN (ignore, and wait for streamer to go live SAJ)
-	else if (!providedStreamData && !savedStreamData && !queriedStreamData)
+	else if (
+		providedStreamData == null &&
+		savedStreamData == null &&
+		queriedStreamData == null
+	)
 		return;
 }
 
