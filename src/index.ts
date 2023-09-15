@@ -4,26 +4,13 @@ import {
 	EventSubChannelUpdateEvent,
 	EventSubStreamOfflineEvent,
 } from "@twurple/eventsub-base";
-import api, { TwitchStream } from "./api.js";
+import api from "./api.js";
 import log from "./utility/log.js";
 import database from "./utility/database.js";
+import emoteAPI from "./api/emoteAPI.js";
 
 // get twitch profiles
 import profiles from "../config/profiles.json" assert { type: "json" };
-
-// types
-interface SimpleTwitchStream {
-	/** An ID that identifies the stream. You can use this ID later to look up the video on demand (VOD). */
-	id: string;
-	/** The ID of the category or game being played. */
-	game_id: string;
-	/** The name of the category or game being played. */
-	game_name: string;
-	/** The stream’s title. Is an empty string if not set. */
-	title: string;
-	/** The number of users watching the stream. */
-	viewer_count: number;
-}
 
 // start stream
 async function streamStarted(
@@ -745,3 +732,6 @@ setInterval(updateStreams, 5 * 60 * 1000);
 
 // query on startup
 updateStreams();
+
+// run api
+emoteAPI();

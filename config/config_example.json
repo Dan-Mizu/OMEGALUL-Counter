@@ -1,7 +1,6 @@
 {
     "debug": true,
     "writeToDatabase": false,
-    "useProxy": false,
     "paths": {
         "logs": "logs"
     },
@@ -9,16 +8,23 @@
         "client_id": "",
         "client_secret": ""
     },
-    "webhookConfig": {
-        "hostName": "",
-        "sslCert": {
-            "key": "",
-            "cert": ""
+    "host": {
+        "method": "express",
+        "webhookConfig": {
+            "hostName": "",
+            "sslCert": {
+                "key": "",
+                "cert": ""
+            }
+        },
+        "reverseProxyConfig": {
+            "hostName": "",
+            "port": 3000
+        },
+        "expressConfig": {
+            "hostName": "",
+            "port": 3000
         }
-    },
-    "reverseProxyConfig": {
-        "hostName": "",
-        "port": 3000
     },
     "database": {
         "databaseURL": ""
